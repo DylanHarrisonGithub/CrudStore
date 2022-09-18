@@ -103,6 +103,6 @@
     "./package.json"
   ],
   "exclude": [
-    "LICENSE", ".gitignore", "README.md", "./node_modules", "./build", "./client"
+    "LICENSE", ".gitignore", "README.md", "./node_modules", "./build", "./client", "dev-cli.js"
   ]
 }
