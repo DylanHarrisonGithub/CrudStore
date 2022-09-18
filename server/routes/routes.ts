@@ -6,5 +6,7 @@ export interface Route {
   route: (request: any) => any
 }
 
-export default {
+const routes: { [key: string]: Route } = {
 }
+
+export default routes;

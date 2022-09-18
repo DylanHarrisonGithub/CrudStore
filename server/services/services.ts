@@ -1,2 +1,7 @@
-export default [
-];
+
+const services: { [key: string]: any } = {
+};
+
+export default services
+
+
