@@ -1,2 +1,3 @@
-export default [
-];
+const models = {};
+
+export default models;

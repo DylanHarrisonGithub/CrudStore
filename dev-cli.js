@@ -127,21 +127,20 @@ const scriptMap = {
           key: /^(r|route)$/,
           exec: (args) => {
             if (args.length) {
-              if (fs.existsSync(`./server/routes/${args[0]}`)) { //.split('/').join('-')
+              const routeName = args[0].split('/').pop();
+              const pathName = '/' + args[0].split('/').slice(0, -1).join('/');
+              if (fs.existsSync(`./server/routes/${args[0]+'/'+routeName}.route.ts}`)) {
                 console.log(ansi.bg.red, `Could not create Route ${args[0]} because it already exists.`, ansi.reset);
               } else {
-                console.log(`Generating route ${args[0]} ...`);
+                console.log(`Generating Route ${args[0]} ...`);
                 fs.mkdirSync(`./server/routes/${args[0]}`, {recursive: true});
-                console.log(ansi.fg.green, `Directory ./routes/components/${args[0]} created`, ansi.reset);
-                const routeName = args[0].split('/').pop();
-                const pathName = '/' + args[0].split('/').slice(0, -1).join('/');
-                //console.log(pathName, routeName);
+                console.log(ansi.fg.green, `Directory ./server/routes/${args[0]} created.`, ansi.reset);
                 fs.writeFileSync(`./server/routes/${args[0]+'/'+routeName}.route.ts`, generateRouteTemplate(routeName));
                 console.log(ansi.fg.green, `./server/routes/${args[0]+'/'+routeName}.route.ts created.`, ansi.reset);
                 fs.writeFileSync(`./server/routes/${args[0]+'/'+routeName}.schema.ts`, generateRouteSchemaTemplate(routeName));
                 console.log(ansi.fg.green, `./server/routes/${args[0]+'/'+routeName}.schema.ts created.`, ansi.reset);
                 writeLineToFile(`./server/routes/routes.ts`, 0, `import ${args[0].split('/').join('_')}Route from './${args[0]+'/'+routeName}.route';\nimport ${args[0].split('/').join('_')}Schema from './${args[0]+'/'+routeName}.schema';`);
-                writeAfterLineToFile(`./server/routes/routes.ts`, `export default {`, ` ${routeName}: {
+                writeAfterLineToFile(`./server/routes/routes.ts`, `const routes: { [key: string]: Route } = {`, ` ${routeName}: {
     method: ${args.length > 1 ? JSON.stringify([args[1]]) : "['GET']"},
     privelege: ${args.length > 2 ? JSON.stringify(args.slice(2, args.length)) : "['guest']"},
     schema: ${args[0].split('/').join('_')}Schema,
@@ -149,13 +148,27 @@ const scriptMap = {
   },`);
                 console.log(`File ./server/routes/routes.ts modified.`);
               }
-            } else { console.log(ansi.bg.yellow, `Please specify a Component name to generate.`, ansi.reset); }
+            } else { console.log(ansi.bg.yellow, `Please specify name of Route to generate.`, ansi.reset); }
           },
           children: []
         },
         {
           key: /^(s|service)$/,
-          exec: (args) => {},
+          exec: (args) => {
+            if (args.length) {
+              if (fs.existsSync(`./server/services/${args[0]}/${args[0]}.service.ts`)) {
+                console.log(ansi.bg.red, `Could not create Service ${args[0]} because it already exists.`, ansi.reset);
+              } else {
+                console.log(`Generating Service ${args[0]} ...`);
+                fs.mkdirSync(`./server/services/${args[0]}`);
+                console.log(ansi.fg.green, `Directory ./server/services/${args[0]} created.`, ansi.reset);
+                fs.writeFileSync(`./server/services/${args[0]}/${args[0]}.service.ts`, `export default () => null;`);
+                console.log(ansi.fg.green, `./server/services/${args[0]}/${args[0]}.service.ts created.`, ansi.reset);
+                writeLineToFile(`./server/services/services.ts`, 0, `import ${args[0]} from './${args[0]+"/"+args[0]+".service"}';`);
+                writeAfterLineToFile(`./server/services/services.ts`, `const services: { [key: string]: any } = {`, `  ${args[0]}: ${args[0]},`)
+              }
+            } else { console.log(ansi.bg.yellow, `Please specify name of Service to generate.`, ansi.reset); }
+          },
           children: []
         }
       ]
@@ -184,7 +197,16 @@ const scriptMap = {
         },
         {
           key: /^(s|service)$/,
-          exec: (args) => {},
+          exec: (args) => {
+            if (args.length) {
+              deleteLineFromFile(`./server/services/services.ts`, `import ${args[0]} from './${args[0]+"/"+args[0]+".service"}';`);
+              deleteLineFromFile(`./server/services/services.ts`, `  ${args[0]}: ${args[0]},`);
+              console.log(`File ./server/services/services.ts modified.`);
+              fs.rmSync(`./server/services/${args[0]}`, {recursive: true, force: true});
+              console.log(`Directory ./server/services/${args[0]} removed.`);
+              console.log(ansi.fg.green, `Service ${args[0]} successfully removed!`, ansi.reset);
+            } else { console.log(`You must specify a service name for deletion.`); }
+          },
           children: []
         }
       ]
