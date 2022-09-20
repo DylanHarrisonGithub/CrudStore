@@ -1,5 +1,5 @@
 const config = {
-  SERVER_SECRET: process.env.SERVER_SECRET || 'asdfjklfjdsaiofenuwaiofhiewoa',
+  SERVER_SECRET: process.env.SERVER_SECRET || '',
   DATABASE_URL: process.env.DATABASE_URL || '',
   APPNAME: 'myMeanMachineApp',
   ENVIRONMENT: 'DEVELOPMENT',
