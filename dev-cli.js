@@ -87,7 +87,7 @@ const cliHelp = '';
 
 // `;
 
-function generateRouteTemplate(routeName) { return `export default (request: any) => {}`; }
+function generateRouteTemplate(routeName) { return `export default (request: any): RouterRoute => {}`; }
 function generateRouteSchemaTemplate(routeName) { return `export default {}`; }
 
 function generateService(args) {}

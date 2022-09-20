@@ -4,6 +4,8 @@ import path from 'path';
 
 import pg from 'pg';
 
+import server from './server/server';
+
 const app = express();
 
 app.use(express.static(path.join(__dirname, 'client')));
