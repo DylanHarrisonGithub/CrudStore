@@ -1,13 +1,26 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import fileUpload from 'express-fileupload';
+
 import path from 'path';
 
 import pg from 'pg';
 
 import server from './server/server';
 
+import { RouterResponse } from 'server/services/router/router.service';
+
 const app = express();
 
+app.use(express.json());
+app.use(cookieParser());
+app.use(fileUpload());
+app.use(express.urlencoded({extended: true}));
+app.use('/api', (request: express.Request, response: express.Response) => {
+  let res: RouterResponse = server.services.router(server.services.request(request));
+  console.log(res);
+});
 app.use(express.static(path.join(__dirname, 'client')));
 
 app.listen(process.env.PORT || 3000, () => {
