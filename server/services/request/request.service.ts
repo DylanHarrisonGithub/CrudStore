@@ -3,6 +3,7 @@ import url = require('url');
 
 export type ParsedRequest = {
   ip: string,
+  timestamp: number,
   method: string,
   route: string,
   token: any,
@@ -42,6 +43,7 @@ export default (req: express.Request) => {
   
   return {
     ip: ip,
+    timestamp: Date.now(),
     method: req.method,
     route: route,
     token: token,
