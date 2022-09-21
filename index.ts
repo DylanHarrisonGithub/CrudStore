@@ -13,6 +13,7 @@ import { RouterResponse } from 'server/services/router/router.service';
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(fileUpload());
