@@ -1,21 +1,15 @@
-import file, { FileService } from './file/file.service';
-import request, { RequestService } from './request/request.service';
-import authentication, { AuthenticationService } from './authentication/authentication.service';
-import router, { RouterService } from './router/router.service';
-import validation, { ValidationService } from './validation/validation.service';
+import file from './file/file.service';
+import requestParser from './requestParser/requestParser.service';
+import authentication from './authentication/authentication.service';
+import router from './router/router.service';
+import validation from './validation/validation.service';
 
-const services: {
-  file: FileService,
-  request: RequestService,
-  authentication: AuthenticationService,
-  router: RouterService,
-  validation: ValidationService
-} = {
+const services = {
   file: file,
-  request: request,
   authentication: authentication,
+  requestParser: requestParser,
   router: router,
-  validation: validation,
+  validation: validation
 };
 
 export default services;

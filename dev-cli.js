@@ -87,7 +87,7 @@ const cliHelp = '';
 
 // `;
 
-function generateRouteTemplate(routeName) { return `export default (request: any): RouterRoute => {}`; }
+function generateRouteTemplate(routeName) { return `import { RouterResponse } from "server/services/router/router.service";\n\nexport default (request: any): RouterResponse => ({ code: 200, json: { success: true, message: ["${routeName} route works!"]} });`; }
 function generateRouteSchemaTemplate(routeName) { return `export default {}`; }
 
 function generateService(args) {}
@@ -162,11 +162,10 @@ const scriptMap = {
                 console.log(`Generating Service ${args[0]} ...`);
                 fs.mkdirSync(`./server/services/${args[0]}`);
                 console.log(ansi.fg.green, `Directory ./server/services/${args[0]} created.`, ansi.reset);
-                fs.writeFileSync(`./server/services/${args[0]}/${args[0]}.service.ts`, `export type ${args[0][0].toUpperCase()+args[0].slice(1)}Service = ()=> null;\n\nexport default () => null;`);
+                fs.writeFileSync(`./server/services/${args[0]}/${args[0]}.service.ts`, `const ${args[0]} = () => null\n\nexport default ${args[0]};`);
                 console.log(ansi.fg.green, `./server/services/${args[0]}/${args[0]}.service.ts created.`, ansi.reset);
-                writeLineToFile(`./server/services/services.ts`, 0, `import ${args[0]}, { ${args[0][0].toUpperCase()+args[0].slice(1)}Service } from './${args[0]+"/"+args[0]+".service"}';`);
-                writeAfterLineToFile(`./server/services/services.ts`, `const services: {`, `  ${args[0]}: ${args[0][0].toUpperCase()+args[0].slice(1)}Service,`);
-                writeAfterLineToFile(`./server/services/services.ts`, `} = {`, `  ${args[0]}: ${args[0]},`);
+                writeLineToFile(`./server/services/services.ts`, 0, `import ${args[0]} from './${args[0]+"/"+args[0]+".service"}';`);
+                writeAfterLineToFile(`./server/services/services.ts`, `const services = {`, `  ${args[0]}: ${args[0]},`);
               }
             } else { console.log(ansi.bg.yellow, `Please specify name of Service to generate.`, ansi.reset); }
           },
