@@ -1,5 +1,4 @@
 export type ValidationErrors = { key: string, message: string }[];
-export type ValidationService = (input: any, schema: any) => ValidationErrors;
 
 // export type Schema = {
 //   required?: boolean,
@@ -30,8 +29,7 @@ const regex = {
   password: /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[-+_!@#$%^&*.,?])/
 };
 
-export default (input: any, schema: any): ValidationErrors => {
-  
+const validation = (input: any, schema: any): ValidationErrors => {
   let _validateLeafNode = (key: any, input: any, schema: any): ValidationErrors => {
     
     let errors: Array<{key: string, message: string}> = [];
@@ -155,3 +153,6 @@ export default (input: any, schema: any): ValidationErrors => {
 
   return _validate(input, schema, _validate, _validateLeafNode);
 }
+
+export default validation;
+  

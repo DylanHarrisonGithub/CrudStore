@@ -1,11 +1,12 @@
-
-import { RouterResponse } from "server/services/router/router.service";
+import { ParsedRequest } from "../services/requestParser/requestParser.service";
+import { RouterResponse } from "../services/router/router.service";
 
 export interface Route {
   method: string[],
   privelege: string[],
   schema: any,
-  route: (request: any) => RouterResponse
+  contentType: string,
+  route: (request: ParsedRequest) => RouterResponse
 }
 
 const routes: { [key: string]: Route } = {

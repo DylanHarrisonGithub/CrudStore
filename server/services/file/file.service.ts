@@ -1,20 +1,8 @@
 import fs = require('fs');
 
-import server from 'server/server';
+import server from '../../server';
 
-export type FileService = {
-  exists: (filepath: string) => Promise<boolean>,
-  create: (filepath: string, content: string) => Promise<string>,
-  read: (filepath: string) => Promise<string>,
-  update: (filepath: string, content: string) => Promise<string>,
-  delete: (filepath: string) => Promise<string>,
-  move: (srcpath: string, destpath: string) => Promise<string>,
-  readDirectory: (path: string) => Promise<string[]>,
-  createDirectory: (path: string) => Promise<string>,
-  deleteDirectory: (path: string) => Promise<string>
-};
-
-export default {
+const file = {
   exists: (filepath: string) => new Promise<boolean>(r=>fs.access(server.config.ROOT_DIR + filepath, fs.constants.F_OK, (e:any) => r(!e))),
   create:  (filepath: string, content: string) => new Promise<string>((res, rej) => {
     fs.writeFile(server.config.ROOT_DIR + filepath, content, (err: any) => {
@@ -63,3 +51,4 @@ export default {
     });
   }
 }
+export default file;
