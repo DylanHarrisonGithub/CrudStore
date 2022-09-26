@@ -100,7 +100,9 @@
   },
   "include": [
     "./*", 
-    "./package.json"
+    "./package.json",
+    "./public",
+    "./public/*.*"
   ],
   "exclude": [
     "LICENSE", ".gitignore", "README.md", "./node_modules", "./build", "./client", "dev-cli.js"
