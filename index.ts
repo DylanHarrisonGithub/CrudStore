@@ -5,14 +5,9 @@ import fileUpload from 'express-fileupload';
 
 import path from 'path';
 
-import pg from 'pg';
-
 import server from './server/server';
 
 import { RouterResponse } from './server/services/router/router.service';
-
-
-import { negotiateCompatibleResponseContentType } from './server/services/router/router.service';
 
 const app = express();
 
@@ -39,24 +34,9 @@ app.use('/api', (request: express.Request, response: express.Response) => {
     response.sendStatus(res.code);
   }
 });
+app.use('/public', express.static(path.join(__dirname, 'public')))
 app.use(express.static(path.join(__dirname, 'client')));
 
-app.listen(process.env.PORT || 3000, () => {
+app.listen(process.env.PORT || 3000, async () => {
   console.log(`CrudStore listening on port ${process.env.PORT || 3000}`);
-  if (process.env.DATABASE_URL) {
-    const pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false
-      }
-    });
-    if (pool) {
-      console.log(`Successfully connected to Postgres database.`);
-    } else {
-      console.log(`Could not connect to database. DATABASE_URL environtment variable may be set incorrectly.`)
-    }
-  } else {
-    console.log(`Could not connect to database. DATABASE_URL environment variable not set.`);
-  }
-
 });
