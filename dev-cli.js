@@ -142,7 +142,8 @@ const scriptMap = {
                 writeLineToFile(`./server/routes/routes.ts`, 0, `import ${args[0].split('/').join('_')}Route from './${args[0]+'/'+routeName}.route';\nimport ${args[0].split('/').join('_')}Schema from './${args[0]+'/'+routeName}.schema';`);
                 writeAfterLineToFile(`./server/routes/routes.ts`, `const routes: { [key: string]: Route } = {`, ` ${routeName}: {
     method: ${args.length > 1 ? JSON.stringify([args[1]]) : "['GET']"},
-    privelege: ${args.length > 2 ? JSON.stringify(args.slice(2, args.length)) : "['guest']"},
+    contentType: "${args.length > 2 ? args[2] : "application/json"}",
+    privelege: ${args.length > 3 ? JSON.stringify(args.slice(3, args.length)) : "['guest']"},
     schema: ${args[0].split('/').join('_')}Schema,
     route: ${args[0].split('/').join('_')}Route 
   },`);
