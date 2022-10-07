@@ -3,9 +3,9 @@ import { RouterResponse } from "../services/router/router.service";
 
 export interface Route {
   method: string[],
+  contentType: string,
   privelege: string[],
   schema: any,
-  contentType: string,
   route: (request: ParsedRequest) => RouterResponse
 }
 
