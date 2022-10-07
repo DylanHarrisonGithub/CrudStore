@@ -17,23 +17,24 @@ import NoPage from './pages/nopage';
 
 function App() {
   return (
-    <div className="container">
+    <div className="container mx-auto">
       <Navbar />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />}>
             <Route index element={<Home />} />
             <Route path="home" element={<Home />} />
-            <Route path="browse" element={<Browse />} />
-            <Route path="cart" element={<Cart />} />
-            <Route path="checkout" element={<Checkout />} />
-            <Route path="contact" element={<Contact />} />
-            <Route path="item" element={<Item />} />
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-            <Route path="about" element={<About />} />
-            <Route path="*" element={<NoPage />} />
           </Route>
+          <Route path="browse" element={<Browse />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="checkout" element={<Checkout />} />
+          <Route path="contact" element={<Contact />} />
+          <Route path="item" element={<Item />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="about" element={<About />} />
+          <Route path="nopage" element={<NoPage />} />
+          <Route path="*" element={<NoPage />} />
         </Routes>
       </BrowserRouter>
       <Footer />
