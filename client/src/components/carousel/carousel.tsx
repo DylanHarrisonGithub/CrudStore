@@ -1,34 +1,27 @@
 import React from "react";
 
-const Carousel: React.FC<any> = (props: any) => {
+import ProductCard from "../product-card/product-card";
+
+export type CarouselProps = {
+  categoryName: string,
+  children: React.ReactNode[]
+}
+
+const Carousel: React.FC<CarouselProps> = (props: CarouselProps) => {
   return (
     <div className="m-2">
-      <h2>Product Category</h2>
+      <h2 className="inline-block">{props.categoryName}</h2>
+      <h2 className="inline-block float-right mr-1"><a href={props.categoryName}>Browse All</a></h2>
       <div className="carousel carousel-center  bg-neutral rounded-box">
-        <div className="carousel-item m-2 hover:m-1">
-          <img src="https://placeimg.com/250/180/arch" className="rounded-box" />
-        </div> 
-        <div className="carousel-item m-2">
-          <img src="https://placeimg.com/250/180/arch" className="rounded-box" />
-        </div> 
-        <div className="carousel-item m-2">
-          <img src="https://placeimg.com/250/180/arch" className="rounded-box" />
-        </div> 
-        <div className="carousel-item m-2">
-          <img src="https://placeimg.com/250/180/arch" className="rounded-box" />
-        </div> 
-        <div className="carousel-item m-2">
-          <img src="https://placeimg.com/250/180/arch" className="rounded-box" />
-        </div> 
-        <div className="carousel-item m-2">
-          <img src="https://placeimg.com/250/180/arch" className="rounded-box" />
-        </div> 
-        <div className="carousel-item m-2">
-          <img src="https://placeimg.com/250/180/arch" className="rounded-box" />
-        </div>
+        {
+          props.children.map(node => (
+            <div className="carousel-item m-2">
+              { node }
+            </div>
+          ))
+        }
       </div>
     </div>
-   
   )
 }
 
