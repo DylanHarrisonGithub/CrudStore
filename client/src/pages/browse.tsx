@@ -1,4 +1,5 @@
 import React from "react";
+import { useParams, useSearchParams } from 'react-router-dom';
 
 const products = [
 
@@ -16,6 +17,11 @@ const products = [
 ]
 
 const Browse: React.FC<any> = (props: any) => {
+
+  const [searchParams] = useSearchParams();
+  const { category } = useParams();
+
+  console.log(category, searchParams);
   return (
     <div className="bg-white">
       <div className="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">

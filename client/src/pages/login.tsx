@@ -1,5 +1,7 @@
 import React from "react";
 
+import ValidationService from "../services/validation.service";
+
 const Login: React.FC<any> = (props: any) => {
   return (
     <div className="card w-96 bg-base-100 shadow-xl mx-auto my-2">
