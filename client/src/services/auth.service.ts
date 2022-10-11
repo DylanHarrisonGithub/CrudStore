@@ -1,71 +1,61 @@
-import { StorageService } from './storage.service';
-
 import config from '../config/config.json';
 
-export class AuthService {
-  
-  private _storageService: StorageService;
+import StorageService from './storage.service';
 
-  constructor() {
-    console.log('auth.service.ts: storage service not yet properly initialized!');
-    this._storageService = new StorageService();
-  }
+const AuthService = {
 
-  storeToken(token: any, method?: string): void {
+  storeToken: (token: any, method?: string): void => {
     switch(method ? method : config.AUTH_TOKEN_STORAGE_METHOD) {
       case 'LOCAL': 
-        this._storageService.local.store('token', token);
+        StorageService.local.store('token', token);
         break;
       case 'SESSION': 
-        this._storageService.session.store('token', token);
+        StorageService.session.store('token', token);
         break;
       case 'COOKIE': 
-        this._storageService.cookie.store('token', token);
+        StorageService.cookie.store('token', token);
         break;
       default: 
-        this._storageService.memory.store('token', token);
+        StorageService.window.store('token', token);
         break;
     }
-  }
-
+  },
   retrieveToken(method?: string): string {
     switch(method ? method : config.AUTH_TOKEN_STORAGE_METHOD) {
       case 'LOCAL': 
-        return this._storageService.local.retrieve('token');
+        return StorageService.local.retrieve('token');
         break;
       case 'SESSION': 
-        return this._storageService.session.retrieve('token');
+        return StorageService.session.retrieve('token');
         break;
       case 'COOKIE': 
-        return this._storageService.cookie.retrieve('token');
+        return StorageService.cookie.retrieve('token');
         break;
       default: 
-        return  this._storageService.memory.retrieve('token');
+        return StorageService.window.retrieve('token');
         break;
     }
-  }
-
+  },
   logout(): void {
     switch(config.AUTH_TOKEN_STORAGE_METHOD) {
       case 'LOCAL': 
-        this._storageService.local.store('token', "");
+        StorageService.local.store('token', "");
         break;
       case 'SESSION': 
-        this._storageService.session.store('token', "");
+        StorageService.session.store('token', "");
         break;
       case 'COOKIE': 
-        this._storageService.cookie.store('token', "");
+        StorageService.cookie.store('token', "");
         break;
       default: 
-        this._storageService.memory.store('token', "");
+        StorageService.window.store('token', "");
         break;
     }
     
     //this._router.navigate(['home']);
     console.log('auth.service.ts: logout(): incomplete. should use router to properly navigate!');
     window.location.href = '/home';
-  }
-
+  },
   getUserDetails() {
     const token = this.retrieveToken();
     let payload;
@@ -80,7 +70,7 @@ export class AuthService {
     } else {
       return null;
     }
-  }
+  },
 
   isLoggedIn(): boolean {
     const user = this.getUserDetails();
@@ -92,3 +82,5 @@ export class AuthService {
   }
 
 }
+
+export default AuthService;
