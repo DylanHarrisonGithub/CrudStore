@@ -18,8 +18,33 @@ import NoPage from './pages/nopage';
 function App() {
   return (
     <div className="container mx-auto">
-      <Navbar />
+      
       <BrowserRouter>
+      <Navbar
+        brand={"CrudStore"}
+        links={[
+          { title: 'home', href: '/home' }
+        ]}
+        menus={[
+          {
+            title: 'go', submenu: [
+              { title: 'login', href: '/login' },
+              { title: 'register', href: '/register' },
+              { title: 'support', submenu: [
+                { title: 'about us', href: '/about' },
+                { title: 'contact', href: '/contact' }
+              ]}
+            ]
+          },
+          {
+            title: 'shopping', submenu: [
+              { title: 'browse', href: '/browse' },
+              { title: 'my cart', href: '/cart' },
+              { title: 'check out', href: '/checkout' }
+            ]
+          }
+        ]}
+      />
         <Routes>
           <Route path="/" element={<Home />}>
             <Route index element={<Home />} />

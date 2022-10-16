@@ -14,8 +14,8 @@ const Carousel: React.FC<CarouselProps> = (props: CarouselProps) => {
       <h2 className="inline-block float-right mr-1"><a href={props.categoryName} className="link link-primary">Browse All</a></h2>
       <div className="carousel carousel-center rounded-box">
         {
-          props.children.map(node => (
-            <div className="carousel-item m-2">
+          props.children.map((node, i) => (
+            <div className="carousel-item m-2" key={i}>
               { node }
             </div>
           ))

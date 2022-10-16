@@ -29,18 +29,22 @@ const StorageService = {
   },
   cookie: {
     store: (key: string, value: any) => {
-      console.log('storage.service.ts: cookie service not yet implemented!');
-      // let storage = this._cookieService.get(config.APP_NAME);
-      // let storageObj: any = {};
-      // if (storage) { storageObj = JSON.parse(storage); }
-      // storageObj[key] = value;
-      // this._cookieService.set(config.APP_NAME, JSON.stringify(storageObj));
+      let storage: any = (<any>document.cookie
+        .split(';')
+        .map(c => c.split('='))
+        .reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: JSON.parse(btoa(value))}), {}))
+        [config.APP_NAME] || {};
+
+      storage[key] = value;
+
+      document.cookie = config.APP_NAME+'='+atob(JSON.stringify(storage));
     },
-    retrieve: (key: string) => { 
-      console.log('storage.service.ts: cookie service not yet implemented!');
-      // let storage = this._cookieService.get(config.APP_NAME);
-      // if (storage) { return JSON.parse(storage)[key]; } else { return undefined; }
-      return '';
+    retrieve: (key: string): any => { 
+      return (<any>document.cookie
+      .split(';')
+      .map(c => c.split('='))
+      .reduce((accumulator, [key, value]) => ({ ...accumulator, [key.trim()]: JSON.parse(btoa(value))}), {}))
+      [config.APP_NAME]?.[key];
     }
   },
   window: {

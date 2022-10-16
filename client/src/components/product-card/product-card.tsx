@@ -21,7 +21,7 @@ const ProductCard: React.FC<ProductCardProps> = (props: ProductCardProps) => {
     src: props.card?.src || "https://placeimg.com/250/180/arch", 
     alt: props.card?.alt || "img source missing", 
     description: props.card?.description || "Buy these shoes now! or else ...",
-    name: props.card?.name || "Product Name"
+    name: props.card?.name || "Product Name",
   });
   
   React.useEffect(() => {
