@@ -38,7 +38,7 @@ const Register: React.FC<any> = (props: any) => {
   }, [form]);
 
   const submit = () => {
-    HttpService.post('register', { email: form.email, password: form.password }).then(res => res.json()).then(res => console.log(res)).catch(err => console.log(err));
+    HttpService.post('register', { email: form.email, password: form.password }).then(res => console.log(res)).catch(err => console.log(err));
   };
 
   return (
