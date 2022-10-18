@@ -16,6 +16,11 @@ import About from './pages/about';
 import NoPage from './pages/nopage';
 
 function App() {
+
+  console.log(process.env.NODE_ENV);
+  console.log(process.env.PUBLIC_URL);
+  console.log(process.env.TZ);
+
   return (
     <div className="container mx-auto">
       

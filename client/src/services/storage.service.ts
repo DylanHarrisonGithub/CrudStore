@@ -1,7 +1,7 @@
-import config from '../config/config.json';
+import config from '../config/config';
 
 const StorageService = {
-  session: {
+  SESSION: {
     store: (key: string, value: any): void => {
       let storage = sessionStorage.getItem(config.APP_NAME);
       let storageObj: any = {};
@@ -14,7 +14,7 @@ const StorageService = {
       if (storage) { return JSON.parse(storage)[key]; } else { return undefined; }
     }
   },
-  local: {
+  LOCAL: {
     store: (key: string, value: any): void => {
       let storage = localStorage.getItem(config.APP_NAME);
       let storageObj: any = {};
@@ -27,7 +27,7 @@ const StorageService = {
       if (storage) { return JSON.parse(storage)[key]; } else { return undefined; }
     }
   },
-  cookie: {
+  COOKIE: {
     store: (key: string, value: any) => {
       let storage: any = (<any>document.cookie
         .split(';')
@@ -47,7 +47,7 @@ const StorageService = {
       [config.APP_NAME]?.[key];
     }
   },
-  window: {
+  WINDOW: {
     store: (key: string, value: any): void => { (<any>window)[config.APP_NAME][key] = value; },
     retrieve: (key: string): any => { return (<any>window)[config.APP_NAME][key]; }
   }
