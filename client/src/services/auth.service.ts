@@ -2,13 +2,15 @@ import config from '../config/config';
 
 import StorageService from './storage.service';
 
+type AuthMethod = "LOCAL" | "SESSION" | "COOKIE" | "WINDOW";
+
 const AuthService = {
 
-  storeToken: (token: any, method?: "LOCAL" | "SESSION" | "COOKIE" | "WINDOW"): void => StorageService[method || config.AUTH_TOKEN_STORAGE_METHOD].store('token', token),
+  storeToken: (token: any, method?: AuthMethod): void => StorageService[method || config.AUTH_TOKEN_STORAGE_METHOD].store('token', token),
 
-  retrieveToken: (method?: "LOCAL" | "SESSION" | "COOKIE" | "WINDOW"): any => StorageService[method || config.AUTH_TOKEN_STORAGE_METHOD].retrieve('token'),
+  retrieveToken: (method?: AuthMethod): any => StorageService[method || config.AUTH_TOKEN_STORAGE_METHOD].retrieve('token'),
    
-  logout: (method?: "LOCAL" | "SESSION" | "COOKIE" | "WINDOW"): void => StorageService[method || config.AUTH_TOKEN_STORAGE_METHOD].store('token', ""),
+  logout: (method?: AuthMethod): void => StorageService[method || config.AUTH_TOKEN_STORAGE_METHOD].store('token', ""),
 
   getUserDetails() {
     const token = this.retrieveToken();
