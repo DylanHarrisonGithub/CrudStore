@@ -61,7 +61,7 @@ const Register: React.FC<any> = (props: any) => {
               (errors.email && errors.email.length > 0) && 
               <ul className="alert-error shadow-lg list-disc list-inside">
                 {
-                  errors.email.map(e => <li className="pl-4">{e}</li>)
+                  errors.email.map((e, i) => <li className="pl-4" key={i}>{e}</li>)
                 }
               </ul>
             }
@@ -80,7 +80,7 @@ const Register: React.FC<any> = (props: any) => {
               (errors.password && errors.password.length > 0) && 
               <ul className="alert-error shadow-lg list-disc list-inside">
                 {
-                  errors.password.map(e => <li className="pl-4">{e}</li>)
+                  errors.password.map((e, i) => <li className="pl-4" key={i}>{e}</li>)
                 }
               </ul>
             }
@@ -99,7 +99,7 @@ const Register: React.FC<any> = (props: any) => {
               (errors.password2 && errors.password2.length > 0) && 
               <ul className="alert-error shadow-lg list-disc list-inside">
                 {
-                  errors.password2.map(e => <li className="pl-4">{e}</li>)
+                  errors.password2.map((e, i) => <li className="pl-4" key={i}>{e}</li>)
                 }
               </ul>
             }

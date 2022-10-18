@@ -1,13 +1,13 @@
 import AuthService from './auth.service';
-import ValidationService from './validation.service';
+import ValidationService, { ValidationErrors } from './validation.service';
 
-import config from '../config/config.json';
+import config from '../config/config';
 
 const HttpService = {
 
-  get(route: string, params?: any, schema?: any, url?: string): Promise<any> {
+  get(route: string, params?: any, schema?: any, url?: string): Promise<{ validationErrors: ValidationErrors, response: Response } | Response> {
     let options: any = { method: 'GET' };
-    if (AuthService.isLoggedIn()) {
+    if (AuthService.isLoggedIn() && config.AUTH_TOKEN_STORAGE_METHOD !== 'COOKIE') {
       options['headers'] = {};
       options['headers']['token'] = JSON.stringify(AuthService.retrieveToken())
     }
@@ -16,12 +16,12 @@ const HttpService = {
     }
 
     return fetch(
-      url? url : config.URI[<"DEVELOPMENT" | "LAN" | "DEPLOY">config.ENVIRONMENT] + "api/" + route,
+      url || config.URI[config.ENVIRONMENT] + "api/" + route,
       options
     ).then(res => {
       if (schema) {
         return {
-          validationErrors: ValidationService(res, schema),
+          validationErrors: ValidationService(res.json(), schema),
           response: res
         }
       } else {
@@ -33,13 +33,13 @@ const HttpService = {
   post(route: string, body: any, schema?: any, url?: string): Promise<any> {
     let options: any = { 
       method: 'POST',
-      headers: {'Content-Type': 'application/json'}
+      headers: {'Content-Type': 'application/json', Accept: 'application/json'}
     };
-    if (AuthService.isLoggedIn()) {
+    if (AuthService.isLoggedIn() && config.AUTH_TOKEN_STORAGE_METHOD !== 'COOKIE') {
       options['headers']['token'] = JSON.stringify(AuthService.retrieveToken())
     }
     return fetch(
-      url ? url : config.URI[<"DEVELOPMENT" | "LAN" | "DEPLOY">config.ENVIRONMENT] + "api/" + route,
+      url ? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
         body: JSON.stringify(body),
         ...options
@@ -53,7 +53,7 @@ const HttpService = {
       } else {
         return res;
       }
-    });
+    }).catch((e: Error) => {});
   },
 
   put(route: string, body: any, schema?: any, url?: string): Promise<any> {
@@ -61,11 +61,11 @@ const HttpService = {
       method: 'PUT',
       headers: {'Content-Type': 'application/json'} 
     };
-    if (AuthService.isLoggedIn()) {
+    if (AuthService.isLoggedIn() && config.AUTH_TOKEN_STORAGE_METHOD !== 'COOKIE') {
       options['headers']['token'] = JSON.stringify(AuthService.retrieveToken())
     }
     return fetch(
-      url? url : config.URI[<"DEVELOPMENT" | "LAN" | "DEPLOY">config.ENVIRONMENT] + "api/" + route,
+      url? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
         body: body,
         ...options
@@ -87,11 +87,11 @@ const HttpService = {
       method: 'PATCH',
       headers: {'Content-Type': 'application/json'} 
     };
-    if (AuthService.isLoggedIn()) {
+    if (AuthService.isLoggedIn() && config.AUTH_TOKEN_STORAGE_METHOD !== 'COOKIE') {
       options['headers']['token'] = JSON.stringify(AuthService.retrieveToken())
     }
     return fetch(
-      url? url : config.URI[<"DEVELOPMENT" | "LAN" | "DEPLOY">config.ENVIRONMENT] + "api/" + route,
+      url? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
         body: body,
         ...options
@@ -113,14 +113,14 @@ const HttpService = {
       method: 'DELETE',
       headers: {'Content-Type': 'application/json'} 
     };
-    if (AuthService.isLoggedIn()) {
+    if (AuthService.isLoggedIn() && config.AUTH_TOKEN_STORAGE_METHOD !== 'COOKIE') {
       options['headers']['token'] = JSON.stringify(AuthService.retrieveToken())
     }
     if (params) {
       options['params'] = new URLSearchParams(params).toString()
     }
     return fetch(
-      url? url : config.URI[<"DEVELOPMENT" | "LAN" | "DEPLOY">config.ENVIRONMENT] + "api/" + route,
+      url? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
         ...options
       }
