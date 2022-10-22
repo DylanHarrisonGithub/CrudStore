@@ -58,7 +58,7 @@ const error = (request: ParsedRequest, response: RouterResponse): RouterResponse
   }
 }
 
-const router = (request: ParsedRequest): RouterResponse => {
+const router = async (request: ParsedRequest): Promise<RouterResponse> => {
   if (request.hasOwnProperty('route')) {
     let route: Route | undefined = server.routes[request.route];
     if (route) {
@@ -79,26 +79,26 @@ const router = (request: ParsedRequest): RouterResponse => {
               return route.route(request);  
             
             } else {
-              return error(request, {
+              return new Promise(res => res(error(request, {
                 code: 400,  // bad request
                   json: {
                     success: false,
                     message: [
                       `Could not negotiate response type.`,
                       `Request accepts ${request.accepts}.`,
-                      `Route provides ${route.contentType}`
+                      `Route provides ${route!.contentType}`
                     ]
                   }
-              });
+              })));
             }
           } else {
-            return error(request, {
+            return new Promise(res => res(error(request, {
               code: 400,  // bad request
               json: {
                 success: false,
                 message: ['Validation failed for route parameters.'].concat(validationErrors.map(err => `key: ${err.key}: ${err.message}`))
               }
-            });
+            })));
           }
   
         } else {
@@ -122,83 +122,83 @@ const router = (request: ParsedRequest): RouterResponse => {
                       return route.route(request);
                       
                     } else {
-                      return error(request, {
+                      return new Promise(res => res(error(request, {
                         code: 400,  // bad request
                           json: {
                             success: false,
                             message: [
                               `Could not negotiate response type.`,
                               `Request accepts ${request.accepts}.`,
-                              `Route provides ${route.contentType}`
+                              `Route provides ${route!.contentType}`
                             ]
                           }
-                      });
+                      })));
                     }
                 } else {
-                  return error(request, {
+                  return new Promise(res => res(error(request, {
                     code: 400,  // bad request
                     json: {
                       success: false,
                       message: ['Validation failed for route parameters.'].concat(validationErrors.map(err => `key: ${err.key}: ${err.message}`))
                     }
-                  });
+                  })));
                 }
   
               } else {
-                return error(request, {
+                return new Promise(res => res(error(request, {
                   code: 403,  // forbidden
                   json: {
                     success: false,
                     message: ['Provided authentication does not have privelege to access route.']
                   }
-                });
+                })));
               }
             } else {
-              return error(request, {
+              return new Promise(res => res(error(request, {
                 code: 403, // forbidden
                 json: {
                   success: false,
                   message: ['Provided authentication was not valid.']
                 }
-              });
+              })));
             }
           } else {
-            return error(request, {
+            return new Promise(res => res(error(request, {
               code: 401, // unauthorized
               json: {
                 success: false,
                 message: ['Authentication was not provided for protected route.']
               }
-            });
+            })));
           }
         }
       } else {
-        return error(request, {
+        return new Promise(res => res(error(request, {
           code: 405,  // method not allowed
           json: {
             success: false,
-            message: ['Method not allowed.', `Provided route, '${request.route}' is ${route.method} method.`]
+            message: ['Method not allowed.', `Provided route, '${request.route}' is ${route!.method} method.`]
           }
-        });
+        })));
       }
     } else {
-      return error(request, {
+      return new Promise(res => res(error(request, {
         code: 404,  // not found
         json: {
           success: false,
           message: [`Provided route, '${request.route}' does not exist.`]
         }
-      });
+      })));
     }
     
   } else {
-    return error(request, {
+    return new Promise(res => res(error(request, {
       code: 400,  // bad request
       json: {
         success: false,
         message: ['Route was not provided.']
       }
-    });
+    })));
   }
 }
 

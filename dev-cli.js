@@ -87,7 +87,7 @@ const cliHelp = '';
 
 // `;
 
-function generateRouteTemplate(routeName) { return `import { RouterResponse } from "server/services/router/router.service";\n\nexport default (request: any): RouterResponse => ({ code: 200, json: { success: true, message: ["${routeName} route works!"]} });`; }
+function generateRouteTemplate(routeName) { return `import { RouterResponse } from '../../services/router/router.service';\n\nexport default (request: any): Promise<RouterResponse> => new Promise(res => res({ code: 200, json: { success: true, message: ["${routeName} route works!"]} }));`; }
 function generateRouteSchemaTemplate(routeName) { return `export default {}`; }
 
 function generateService(args) {}
@@ -141,7 +141,7 @@ const scriptMap = {
                 console.log(ansi.fg.green, `./server/routes/${args[0]+'/'+routeName}.schema.ts created.`, ansi.reset);
                 writeLineToFile(`./server/routes/routes.ts`, 0, `import ${args[0].split('/').join('_')}Route from './${args[0]+'/'+routeName}.route';\nimport ${args[0].split('/').join('_')}Schema from './${args[0]+'/'+routeName}.schema';`);
                 writeAfterLineToFile(`./server/routes/routes.ts`, `const routes: { [key: string]: Route } = {`, ` ${routeName}: {
-    method: ${args.length > 1 ? JSON.stringify([args[1]]) : "['GET']"},
+    method: ${args.length > 1 ? JSON.stringify([args[1].toUpperCase()]) : "['GET']"},
     contentType: "${args.length > 2 ? args[2] : "application/json"}",
     privelege: ${args.length > 3 ? JSON.stringify(args.slice(3, args.length)) : "['guest']"},
     schema: ${args[0].split('/').join('_')}Schema,

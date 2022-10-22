@@ -93,7 +93,7 @@ const HttpService = {
   patch<T = void>(route: string, body: any, schema?: any, url?: string): HttpServiceReturnType<T> {
     let options: any = { 
       method: 'PATCH',
-      headers: {'Content-Type': 'application/json'} 
+      headers: {'Content-Type': 'application/json', Accept: 'application/json'} 
     };
     if (AuthService.isLoggedIn() && config.AUTH_TOKEN_STORAGE_METHOD !== 'COOKIE') {
       options['headers']['token'] = JSON.stringify(AuthService.retrieveToken())
@@ -119,7 +119,7 @@ const HttpService = {
   delete<T = void>(route: string, params?: any, schema?: any, url?: string): HttpServiceReturnType<T> {
     let options: any = { 
       method: 'DELETE',
-      headers: {'Content-Type': 'application/json'} 
+      headers: {'Content-Type': 'application/json', Accept: 'application/json'} 
     };
     if (AuthService.isLoggedIn() && config.AUTH_TOKEN_STORAGE_METHOD !== 'COOKIE') {
       options['headers']['token'] = JSON.stringify(AuthService.retrieveToken())
