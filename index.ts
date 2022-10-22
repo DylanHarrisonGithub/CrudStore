@@ -8,18 +8,21 @@ import path from 'path';
 import server from './server/server';
 
 import { RouterResponse } from './server/services/router/router.service';
+import db from './server/services/db/db.service';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 app.use(fileUpload());
 app.use(express.urlencoded({extended: true}));
 app.use('/api', async (request: express.Request, response: express.Response) => {
-  let pRequest = server.services.requestParser(request);
-  console.log(pRequest);
+  
+  // let pRequest = server.services.requestParser(request);
+  // console.log(pRequest);
   let res: RouterResponse = await server.services.router(server.services.requestParser(request));
+
   console.log(res);
   Object.keys(res.headers || {}).forEach(key => response.setHeader(key, res.headers![key]));
   if (res.json) {
@@ -39,4 +42,16 @@ app.use(express.static(path.join(__dirname, 'client')));
 
 app.listen(process.env.PORT || 3000, async () => {
   console.log(`CrudStore listening on port ${process.env.PORT || 3000}`);
+
+  console.log(JSON.stringify(await db.table.create(
+    'user', 
+    { 
+      id: `SERIAL`,
+      email: 'TEXT', 
+      password: 'TEXT',
+      salt: 'TEXT',
+      privilege: `TEXT`,
+      PRIMARY: 'KEY (email)' 
+    }
+  )));
 });
