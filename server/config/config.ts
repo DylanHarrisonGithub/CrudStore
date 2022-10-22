@@ -1,7 +1,7 @@
 import path from 'path';
 
 const config = {
-  SERVER_SECRET: process.env.SERVER_SECRET || '',
+  SERVER_SECRET: process.env.SERVER_SECRET || 'abcdefg',
   DATABASE_URL: process.env.DATABASE_URL || '',
   APPNAME: 'CrudStore',
   ENVIRONMENT: 'DEVELOPMENT',

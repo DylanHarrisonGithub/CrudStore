@@ -5,51 +5,31 @@ import crypto from 'crypto';
 
 export default async (request: any): Promise<RouterResponse> => {
 
-  const {email, password}: {email: string, password: string} = request;
+  const {email, password}: {email: string, password: string} = request.params;
 
   const salt = crypto.randomBytes(32).toString('hex');
-  const hash = crypto.pbkdf2Sync(password, salt, 32, 64, 'sha512').toString('hex');
+  const hash = await crypto.pbkdf2Sync(password, salt, 32, 64, 'sha512').toString('hex');
 
-  // DB.create('user', { email: email, privilege: 'user', password: hash, salt: salt }).then(res => {
-  //   return { 
-  //     code: 200, 
-  //     json: { 
-  //       success: true, 
-  //       message: [`New user ${email} registered.`],
-  //       body: { token: authentication.generateToken({email: email, privilege: 'user'})}
-  //     } 
-  //   }
-  // }).catch(e => {
-  //   return { 
-  //     code: 200, 
-  //     json: { 
-  //       success: false, 
-  //       message: [e]
-  //     } 
-  //   }
-  // });
-
-  const res = await DB.create('user', { email: email, privilege: 'user', password: hash, salt: salt });
+  const res = await DB.row.create('user', { email: email, privilege: 'user', password: password, salt: salt });
   
   if (res.success) {
-    return { 
+    return new Promise(resolve => resolve({ 
       code: 200, 
       json: { 
         success: true, 
         message: [`New user ${email} registered.`],
-        body: { token: authentication.generateToken({email: email, privilege: 'user'}) }
+        body: { token: authentication.generateToken({email: email, privilege: 'user', dummy: ""}) }
       } 
-    }
+    }));
   } else {
-    return { 
-      code: 200, 
+    return new Promise(resolve => resolve({ 
+      code: 500, 
       json: { 
-        success: true, 
-        message: [`New user ${email} registered.`],
-        body: { token: authentication.generateToken({email: email, privilege: 'user'}) }
+        success: false, 
+        message: [`User ${email} could not be registered.`],
+        body: { res: res } //authentication.generateToken({email: email, privilege: 'user'}) }
       } 
-    }
+    }));
   }
-  
-  
+
 };
