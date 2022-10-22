@@ -105,11 +105,14 @@ const Register: React.FC<any> = (props: any) => {
             }
           </label>
 
-          <button className="btn btn-wide mx-auto mt-8" disabled={
-            ((errors.email && !!(errors.email.length)) || !form.email.length) ||
-            ((errors.password && !!(errors.password.length)) || !form.password.length) ||
-            ((errors.password2 && !!(errors.password2.length)) || !form.password2.length)
-          } onClick={submit}>Submit</button>
+          <button className="btn btn-wide mx-auto mt-8" 
+            disabled={
+              ((errors.email && !!(errors.email.length)) || !form.email.length) ||
+              ((errors.password && !!(errors.password.length)) || !form.password.length) ||
+              ((errors.password2 && !!(errors.password2.length)) || !form.password2.length)
+            } 
+            onClick={submit}
+          >Submit</button>
         </div>
       </div>
     </div>

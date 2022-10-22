@@ -16,10 +16,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(fileUpload());
 app.use(express.urlencoded({extended: true}));
-app.use('/api', (request: express.Request, response: express.Response) => {
+app.use('/api', async (request: express.Request, response: express.Response) => {
   let pRequest = server.services.requestParser(request);
   console.log(pRequest);
-  let res: RouterResponse = server.services.router(server.services.requestParser(request));
+  let res: RouterResponse = await server.services.router(server.services.requestParser(request));
   console.log(res);
   Object.keys(res.headers || {}).forEach(key => response.setHeader(key, res.headers![key]));
   if (res.json) {

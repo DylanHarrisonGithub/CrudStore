@@ -33,7 +33,7 @@ const Carousel: React.FC<CarouselProps> = (props: CarouselProps) => {
         className="absolute z-10 btn btn-circle text-4xl left-5 top-1/2 p-8" 
         // href={'#'+props.categoryName.replaceAll(' ', '')+((scroll + props.children.length-1) % props.children.length)}
         // onClick={() => setScroll(s => (s + props.children.length-1) % props.children.length)}
-        onClick={()=>{ref.current!.scrollLeft -= .6*ref.current!.clientWidth; console.log(ref.current!.scrollLeft)}}
+        onClick={()=>{ ref.current!.scrollLeft -= .6*ref.current!.clientWidth; }}
       >
         <span className="absolute -translate-y-1/2 top-1/2 -translate-x-1/6">❮</span>
       </a>
@@ -42,7 +42,7 @@ const Carousel: React.FC<CarouselProps> = (props: CarouselProps) => {
         className="absolute z-10 btn btn-circle text-4xl right-5 top-1/2 p-8"
         // href={'#'+props.categoryName.replaceAll(' ', '')+((scroll + 1) % props.children.length)}
         // onClick={() => setScroll(s => (s + 1) % props.children.length)}
-        onClick={()=>{ref.current!.scrollLeft += .6*ref.current!.clientWidth; console.log(ref.current!.scrollLeft)}}
+        onClick={()=>{ ref.current!.scrollLeft += .6*ref.current!.clientWidth; }}
       >
         <span className="absolute -translate-y-1/2 top-1/2 -translate-x-1/6">❯</span>
       </a>
