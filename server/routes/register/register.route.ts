@@ -10,7 +10,7 @@ export default async (request: any): Promise<RouterResponse> => {
   const salt = crypto.randomBytes(32).toString('hex');
   const hash = await crypto.pbkdf2Sync(password, salt, 32, 64, 'sha512').toString('hex');
 
-  const res = await DB.row.create('user', { email: email, privilege: 'user', password: password, salt: salt });
+  const res = await DB.row.create('user', { email: email, privilege: 'user', password: hash, salt: salt });
   
   if (res.success) {
     return new Promise(resolve => resolve({ 
