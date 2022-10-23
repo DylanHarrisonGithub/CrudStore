@@ -1,11 +1,13 @@
 export default {
   email: {
     type: 'string',
-    isEmail: true
+    isEmail: true,
+    required: true
   },
   password: {
     minLength: 8,
     type: 'string',
-    isPassword: true
+    isPassword: true,
+    required: true
   }
 }
