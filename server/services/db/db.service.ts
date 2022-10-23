@@ -158,7 +158,7 @@ const db = {
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `CREATE TABLE IF NOT EXISTS "${table}" (${
         Object.keys(columns).map((key, index) => `\n  ${key} ${columns[key]}`) // (index !== Object.keys(columns).length -1 ? ',' : '')}`)
-      }\n)`;
+      }\n);`;
 
       console.log(query);
 
@@ -182,6 +182,115 @@ const db = {
         }
       }
 
+    },
+
+    read: async (table?: string): Promise<{ 
+      success: boolean, 
+      message: string[], 
+      query: string,
+      result?: any// { [key: string]: string | number | boolean }[] 
+    }> => {
+
+      const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+      const query = table ?
+        `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '${table}';` 
+      : 
+        `SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE AND table_schema = 'public';`;
+      
+      try {
+        await client.connect();
+        const result = await client.query(query);
+        await client.end();
+        return {
+          success: true,
+          query: query,
+          message: [table ? `${table} read successfully.` : `Tables read successfully`],
+          result: result.rows
+        }
+      } catch (error) {
+        await client.end();
+        return {
+          success: false,
+          query: query,
+          message: [table ? `Error attempting to read table ${table}.` : `Error attempting to read tables.`].concat(<string[]>(<any>error).stack)
+        }
+      }
+    },
+
+    update: async (
+      table: string,
+      updates: {
+        add?: { [column: string]: string },
+        drop?: string[],
+        redifine?: { [column: string]: string },
+        rename?: { [column: string]: string }
+      }
+    ): Promise<{ success: boolean, query: string, message: string[] }> => {
+
+      if (!(Object.keys(updates).length)) {
+        return {
+          success: true,
+          query: '',
+          message: [`Warning attempting to update table ${table}. No updates were provided`]
+        }
+      }
+
+      const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+      const query = `ALTER TABLE "${table}"${
+        Object.keys(updates.add || {}).map((column, i) => `\n  ADD "${column}" ${updates.add![column]}`)
+      } ${
+        updates.drop?.map((column, i) => `\n  ADD DROP COLUMN "${column}"`)
+      } ${
+        Object.keys(updates.redifine || {}).map((column, i) => `\n  ALTER COLUMN "${column}" TYPE ${updates.redifine![column]}`)
+      } ${
+        Object.keys(updates.rename || {}).map((column, i) => `\n  RENAME COLUMN "${column}" TO ${updates.redifine![column]}`)
+      };`;
+
+      try {
+        await client.connect();
+        const result = await client.query(query);
+        await client.end();
+        console.log(result);
+
+        return {
+          success: true,
+          query: query,
+          message: [`Table ${table} successfully updated.`],
+        }
+      } catch (error) {
+        await client.end();
+        return {
+          success: false,
+          query: query,
+          message: [`Error attempting to update table ${table}.`].concat(<string[]>(<any>error).stack)
+        }
+      }
+    },
+
+    delete: async (table: string): Promise<{ success: boolean, query: string, message: string[] }> => {
+
+      const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+      const query = `DROP TABLE "${table}";`;
+
+      try {
+        await client.connect();
+        const result = await client.query(query);
+        await client.end();
+        console.log(result);
+
+        return {
+          success: true,
+          query: query,
+          message: [`Table ${table} successfully deleted.`],
+        }
+      } catch (error) {
+        await client.end();
+        return {
+          success: false,
+          query: query,
+          message: [`Error attempting to delete table ${table}.`].concat(<string[]>(<any>error).stack)
+        }
+      }
     }
 
   }
