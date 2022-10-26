@@ -1,7 +1,10 @@
 import React from "react";
-import HttpService from "../services/http.service";
+import { useNavigate } from 'react-router-dom';
 
-import ValidationService from "../services/validation.service";
+import HttpService from "../services/http.service";
+import AuthService from "../services/auth.service";
+
+import { ModalContext } from "../components/modal/modal";
 
 const Login: React.FC<any> = (props: any) => {
 
@@ -9,8 +12,45 @@ const Login: React.FC<any> = (props: any) => {
 
   const updateForm = (key: string, value: string) => setForm({ ...form, [key]: value });
 
+  const modalContext = React.useContext(ModalContext);
+
+  const navigate = useNavigate();
+
   const submit = () => {
-    HttpService.post('login', { email: form.email, password: form.password }).then(res => console.log(res)).catch(err => console.log(err));
+    HttpService.post<{
+      success: boolean,
+      message: string[],
+      body?: { token: string }
+    }>('login', { email: form.email, password: form.password }).then(res => {
+      
+      if (res.error) {
+        console.log(res);
+        modalContext.toast?.('error', 'Error occured attempting to login.');
+        modalContext.toast?.('error', res.error.toString());
+      } else {
+        if (res.validationErrors) {
+          modalContext.toast?.('error', 'Error occured attempting to login.');
+          res.validationErrors.forEach(m => modalContext.toast?.('error', m.key + ': ' + m.message));
+        } else {
+          if (res.response) {
+            if (res.response.success === true && res.response.body?.token) {
+              res.response.message.forEach(m => modalContext.toast?.('success', m));
+              AuthService.storeToken(res.response.body.token);
+              navigate('/home');
+            } else {
+              modalContext.toast?.('error', 'Error occured attempting to login.');
+              res.response.message.forEach(m => modalContext.toast?.('error', m));
+            }
+          } else {
+            modalContext.toast?.('error', 'Unknown error occured attempting to login.');
+          }
+        }
+      }
+    }).catch(err => {
+      console.log(err);
+      modalContext.toast?.('error', 'Unknown error occured attempting to login.');
+      modalContext.toast?.('error', err.toString());
+    });
   };
 
   return (
