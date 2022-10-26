@@ -10,6 +10,8 @@ import server from './server/server';
 import { RouterResponse } from './server/services/router/router.service';
 import db from './server/services/db/db.service';
 
+import os from 'os';
+
 const app = express();
 
 app.use(cors({ credentials: true }));
@@ -54,4 +56,6 @@ app.listen(process.env.PORT || 3000, async () => {
       PRIMARY: 'KEY (email)' 
     }
   )));
+
+  console.log(os.hostname());
 });
