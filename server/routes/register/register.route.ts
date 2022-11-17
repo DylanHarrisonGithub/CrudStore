@@ -10,14 +10,14 @@ export default async (request: any): Promise<RouterResponse> => {
   const salt = crypto.randomBytes(32).toString('hex');
   const hash = await crypto.pbkdf2Sync(password, salt, 32, 64, 'sha512').toString('hex');
 
-  const res = await DB.row.create('user', { email: email, privilege: 'user', password: hash, salt: salt });
+  const res = await DB.row.create('user', { email: email, privilege: 'user', password: hash, salt: salt, avatar: `https://avatars.dicebear.com/api/male/john.svg?background=%230000ff` });
   
   if (res.success) {
     return new Promise(resolve => resolve({ 
       code: 200, 
       json: { 
         success: true, 
-        message: [`New user ${email} registered.`],
+        message: [`New user ${email} registered.`].concat(res.message),
         body: { token: authentication.generateToken({email: email, privilege: 'user', dummy: ""}) }
       } 
     }));
@@ -26,7 +26,7 @@ export default async (request: any): Promise<RouterResponse> => {
       code: 500, 
       json: { 
         success: false, 
-        message: [`User ${email} could not be registered.`],
+        message: [`User ${email} could not be registered.`].concat(res.message),
         body: { res: res } //authentication.generateToken({email: email, privilege: 'user'}) }
       } 
     }));

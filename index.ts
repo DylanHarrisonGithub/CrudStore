@@ -39,7 +39,7 @@ app.use('/api', async (request: express.Request, response: express.Response) => 
     response.sendStatus(res.code);
   }
 });
-app.use('/public', express.static(path.join(__dirname, 'public')))
+app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'client')));
 
 app.listen(process.env.PORT || 3000, async () => {
@@ -53,6 +53,7 @@ app.listen(process.env.PORT || 3000, async () => {
       password: 'TEXT',
       salt: 'TEXT',
       privilege: `TEXT`,
+      avatar: `TEXT`,
       PRIMARY: 'KEY (email)' 
     }
   )));

@@ -1,17 +1,17 @@
 export type ValidationErrors = { key: string, message: string }[];
 
-// export type Schema = {
-//   required?: boolean,
-//   type?: "string" | "number" | "boolean" | string[] | number[] | boolean[] | Schema,
-//   isArray?: boolean,
-//   arrayMinLength?: number,
-//   arrayMaxLength?: number,
-//   minLength?: number,
-//   maxLength?: number,
-//   min?: number,
-//   max?: number,
-//   format?: "isAlpha" | "isAlphaNumeric" | "isAlphaNumericSpaces" | "isCommonWriting" | "isEmail" | "isPassword" | RegExp
-// }
+export type ValidationSchema = { [key: string]: {
+  required?: boolean,
+  type?: "string" | "number" | "boolean" | "string[]" | "number[]" | "boolean[]" | ValidationSchema,
+  isArray?: boolean,
+  arrayMinLength?: number,
+  arrayMaxLength?: number,
+  minLength?: number,
+  maxLength?: number,
+  min?: number,
+  max?: number,
+  format?: "isAlpha" | "isAlphaNumeric" | "isAlphaNumericSpaces" | "isCommonWriting" | "isEmail" | "isPassword" | RegExp
+}};
 
 // below is a useful example of how to require at least one of a list of keys to be present
 // type Fruit = "apple" | 'banana' | 'coconut'

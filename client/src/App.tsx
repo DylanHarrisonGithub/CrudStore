@@ -15,6 +15,7 @@ import Login from './pages/login';
 import Register from './pages/register';
 import About from './pages/about';
 import NoPage from './pages/nopage';
+import Admin from './pages/admin';
 
 function App() {
 
@@ -68,6 +69,7 @@ function App() {
             <Route path="register" element={<Register />} />
             <Route path="about" element={<About />} />
             <Route path="nopage" element={<NoPage />} />
+            <Route path="admin" element={<Admin />} />
             <Route path="*" element={<NoPage />} />
           </Routes>
           <Footer />

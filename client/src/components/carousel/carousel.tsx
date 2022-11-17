@@ -1,8 +1,6 @@
 import React from "react";
 import { Link } from 'react-router-dom';
 
-import ProductCard from "../product-card/product-card";
-
 export type CarouselProps = {
   categoryName: string,
   children: React.ReactNode[]
