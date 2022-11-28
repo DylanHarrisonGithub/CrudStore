@@ -49,7 +49,7 @@ const HttpService = {
     return fetch(
       url ? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
-        body: JSON.stringify(body),
+        body: body, //JSON.stringify(body),
         ...options
       }
     ).then(res => res.json()).then((res: T) => {
@@ -131,6 +131,29 @@ const HttpService = {
       url? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
         ...options
+      }
+    ).then(res => res.json()).then((res: T) => {
+      if (schema) {
+        return {
+          validationErrors: ValidationService(res, schema),
+          response: res
+        }
+      } else {
+        return { response: res };
+      }
+    }).catch((e: Error) => { return { error: e }});
+  },
+
+  upload<T= void>(route: string, file: File, schema?: any, url?: string): HttpServiceReturnType<T> {
+    
+    const body = new FormData();
+    body.append(file.name, file);
+    
+    return fetch(
+      url? url : config.URI[config.ENVIRONMENT] + "api/" + route,
+      {
+        method: 'POST',
+        body: body
       }
     ).then(res => res.json()).then((res: T) => {
       if (schema) {
