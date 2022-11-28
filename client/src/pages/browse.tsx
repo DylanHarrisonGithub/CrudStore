@@ -24,7 +24,7 @@ const Browse: React.FC<any> = (props: any) => {
 
   return (
     <div className="bg-white">
-      <div className="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
+      <div className="mx-auto max-w-2xl px-4 sm:py-24 sm:px-6 lg:max-w-7xl lg:px-8">
 
           <Gallery title={category || searchParams.get('search') || "All"}>
 
@@ -40,7 +40,7 @@ const Browse: React.FC<any> = (props: any) => {
                 <div>
                   <h3 className="text-sm text-gray-700">
                     <a href={products[0].href}>
-                      <span aria-hidden="true" className="absolute inset-0" />
+                      {/* <span aria-hidden="true" className="absolute inset-0" /> */}
                       {products[0].name}
                     </a>
                   </h3>
@@ -62,7 +62,7 @@ const Browse: React.FC<any> = (props: any) => {
                 <div>
                   <h3 className="text-sm text-gray-700">
                     <a href={products[0].href}>
-                      <span aria-hidden="true" className="absolute inset-0" />
+                      {/* <span aria-hidden="true" className="absolute inset-0" /> */}
                       {products[0].name}
                     </a>
                   </h3>

@@ -5,9 +5,11 @@ export type ModalProps = {
 }
 
 export const ModalContext = React.createContext<{
-  toast: null | ((status: "alert" | "error" | "info" | "success" | "warning", text: string) => void)
+  toast: null | ((status: "alert" | "error" | "info" | "success" | "warning", text: string) => void),
+  modal: null | ((m?: { prompt: string, options: string[] }) => Promise<string | null> | void)
 }>({
-  toast: null
+  toast: null,
+  modal: null
 }); 
 
 const Modal: React.FC<ModalProps> = (props: ModalProps) => {
@@ -18,6 +20,14 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
     text: string,
     timeout: ReturnType<typeof setTimeout>
   }[]>([]);
+
+  const [_modal, setModal] = React.useState<null | {
+    prompt: string,
+    options: string[]
+  }>(null);
+
+  const _modalResolve = React.useRef<((value: null | string | Promise<string | null>) => void) | null>(null);
+  const _modalReject = React.useRef<((value: null | string | Promise<string | null>) => void) | null>(null);
 
   const toast = (status: "alert" | "error" | "info" | "success" | "warning", text: string) => {
     let t = {
@@ -45,13 +55,43 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
     }
   }
 
+  const modal = (m?: {prompt: string, options: string[]}): Promise<string | null> | void => {
+    if (!_modal && m) {
+      return new Promise<string | null>((res, rej) => {
+        setModal({prompt: m!.prompt, options: m!.options});
+        _modalResolve.current = res;
+        _modalReject.current = rej;
+      });
+    } else {
+      _modalResolve.current = null;
+      _modalReject.current = null;
+      setModal(null);
+    }
+  }
+
   return (
     <div className="p-0 m-0">
-      <ModalContext.Provider value={{toast: toast}}>
+      <ModalContext.Provider value={{toast: toast, modal: modal}}>
         {
           props.children
         }
       </ModalContext.Provider>
+      {
+        (_modal && _modalResolve.current && _modalReject.current) && (
+          <div className="fixed left-0 top-0 w-full h-full bg-slate-500/50 z-40"
+            onClick={() => { _modalReject.current!(null); modal(); }}
+          >
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded p-5">
+              <p className="text-xl font-bold tracking-tight text-gray-600">{_modal.prompt}</p>
+              <div className="flex justify-end">
+                {
+                  _modal.options.map((opt, key) => <button className="btn btn-primary ml-3 mt-4 mb-1" key={key} onClick={(e) => {_modalResolve.current!(opt)}}>{opt}</button>)
+                }
+              </div>
+            </div>
+          </div>
+        )
+      }
       <div className="fixed bottom-0 container p-4 z-50">
 
         {

@@ -1,3 +1,5 @@
+import uploadavatarRoute from './uploadavatar/uploadavatar.route';
+import uploadavatarSchema from './uploadavatar/uploadavatar.schema';
 import avatarlistRoute from './avatarlist/avatarlist.route';
 import avatarlistSchema from './avatarlist/avatarlist.schema';
 import loginRoute from './login/login.route';
@@ -16,6 +18,13 @@ export interface Route {
 }
 
 const routes: { [key: string]: Route } = {
+ uploadavatar: {
+    method: ["POST"],
+    contentType: "application/json",
+    privelege: ['guest'],
+    schema: uploadavatarSchema,
+    route: uploadavatarRoute 
+  },
  avatarlist: {
     method: ['GET'],
     contentType: "application/json",

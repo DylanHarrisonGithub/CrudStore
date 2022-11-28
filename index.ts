@@ -21,8 +21,6 @@ app.use(fileUpload());
 app.use(express.urlencoded({extended: true}));
 app.use('/api', async (request: express.Request, response: express.Response) => {
   
-  // let pRequest = server.services.requestParser(request);
-  // console.log(pRequest);
   let res: RouterResponse = await server.services.router(server.services.requestParser(request));
 
   console.log(res);
