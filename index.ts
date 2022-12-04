@@ -21,9 +21,12 @@ app.use(fileUpload());
 app.use(express.urlencoded({extended: true}));
 app.use('/api', async (request: express.Request, response: express.Response) => {
   
+  //console.log(request.query);
+
   let res: RouterResponse = await server.services.router(server.services.requestParser(request));
 
-  console.log(res);
+  //console.log(res);
+  
   Object.keys(res.headers || {}).forEach(key => response.setHeader(key, res.headers![key]));
   if (res.json) {
     response.status(res.code).json(res.json);

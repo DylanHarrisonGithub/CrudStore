@@ -45,7 +45,7 @@ const requestParser = (req: express.Request): ParsedRequest => {
     accepts: req.get('Accept') || '', //req.get('Accept')?.split(',').map(type => type.indexOf(';') > -1 ? type.substring(0, type.lastIndexOf(';')).split('/') : type.split('/') ) || [],
     route: route,
     token: token,
-    params: req.method === 'GET' ? req.query : req.body,
+    params: (req.method === 'GET' || req.method === 'DELETE') ? req.query : req.body,
     files: req.files
   }
 }

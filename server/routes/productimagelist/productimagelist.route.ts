@@ -4,14 +4,14 @@ import file from '../../services/file/file.service';
 
 export default async (request: any): Promise<RouterResponse> => {
 
-  const aList = await file.readDirectory('/public/avatars');
+  const pList = await file.readDirectory('/public/products');
 
   return new Promise(res => res({
     code: 200,
     json: {
       success: true, 
-      message: ["Successfully loaded avatar list!"],
-      body: aList
+      message: ["Successfully loaded product image list!"],
+      body: pList
     }
   }))
 }

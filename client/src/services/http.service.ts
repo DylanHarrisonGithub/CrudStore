@@ -19,8 +19,9 @@ const HttpService = {
     if (AuthService.isLoggedIn() && config.AUTH_TOKEN_STORAGE_METHOD !== 'COOKIE') {
       options.headers['token'] = JSON.stringify(AuthService.retrieveToken());
     }
+    
     if (params) {
-      options['params'] = new URLSearchParams(params).toString();
+      route += '?' + new URLSearchParams(params).toString();
     }
 
     return fetch(
@@ -117,6 +118,7 @@ const HttpService = {
   },
 
   delete<T = void>(route: string, params?: any, schema?: any, url?: string): HttpServiceReturnType<T> {
+    
     let options: any = { 
       method: 'DELETE',
       headers: {'Content-Type': 'application/json', Accept: 'application/json'} 
@@ -125,8 +127,9 @@ const HttpService = {
       options['headers']['token'] = JSON.stringify(AuthService.retrieveToken())
     }
     if (params) {
-      options['params'] = new URLSearchParams(params).toString()
+      route += '?' + new URLSearchParams(params).toString();
     }
+
     return fetch(
       url? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
