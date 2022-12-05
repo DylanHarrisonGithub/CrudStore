@@ -31,14 +31,14 @@ const db = {
       }
     },
 
-    read: async (
+    read: async <T = void>(
       table: string, 
       where?: { [key: string]: string | number | boolean }
     ): Promise<{ 
       success: boolean, 
       message: string[], 
       query: string,
-      result?: any// { [key: string]: string | number | boolean }[] 
+      result?: T// { [key: string]: string | number | boolean }[] 
     }> => {
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `SELECT * FROM "${table}"${
@@ -53,13 +53,13 @@ const db = {
       };`;
       try {
         await client.connect();
-        const result = await client.query(query);
+        const result = <T>((await client.query(query)).rows as unknown);
         await client.end();
         return {
           success: true,
           query: query,
           message: [`Rows successfully selected from table ${table}.`],
-          result: result.rows
+          result: result
         }
       } catch (error) {
         await client.end();
@@ -102,20 +102,20 @@ const db = {
       try {
         await client.connect();
         await client.query(query);
+        await client.end();
         return {
           success: true,
           query: query,
           message: [`Row(s) successfully updated in table ${table}.`]
         }
       } catch (error) {
+        await client.end();
         return {
           success: false,
           query: query,
           message: [`Error attempting to update row(s) in table ${table}.`].concat(<string[]>(<any>error).stack)
         }
-      } finally {
-        await client.end();
-      }   
+      }  
     },
 
     delete: async (table: string, where?: { [key: string]: string | number | boolean }): Promise<{ success: boolean, query: string, message: string[] }> => {
@@ -134,20 +134,42 @@ const db = {
       try {
         await client.connect();
         await client.query(query);
+        await client.end();
         return {
           success: true,
           query: query,
           message: [`Row(s) successfully deleted in table ${table}.`]
         }
       } catch (error) {
+        await client.end();
         return {
           success: false,
           query: query,
           message: [`Error attempting to delete row(s) in table ${table}.`].concat(<string[]>(<any>error).stack)
         }
-      } finally {
+      }
+    },
+
+    query: async <T = void>(query: string): Promise<{ success: boolean, query: string, message: string[], result?: T}> => {
+
+      const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+      try {
+        await client.connect();
+        const result = <T>((await client.query(query)).rows as unknown);
         await client.end();
-      }   
+        return {
+          success: true,
+          query: query,
+          message: [`Query successfully executed.`],
+          result: result
+        }
+      } catch (error) {
+        return {
+          success: false,
+          query: query,
+          message: [`Query did not execute successfully.`].concat(<string[]>(<any>error).stack)
+        }
+      }
     }
   },
 
@@ -160,14 +182,10 @@ const db = {
         Object.keys(columns).map((key, index) => `\n  ${key} ${columns[key]}`) // (index !== Object.keys(columns).length -1 ? ',' : '')}`)
       }\n);`;
 
-      console.log(query);
-
       try {
         await client.connect();
         const result = await client.query(query);
         await client.end();
-        console.log(result);
-
         return {
           success: true,
           query: query,
@@ -250,8 +268,6 @@ const db = {
         await client.connect();
         const result = await client.query(query);
         await client.end();
-        console.log(result);
-
         return {
           success: true,
           query: query,
@@ -276,8 +292,6 @@ const db = {
         await client.connect();
         const result = await client.query(query);
         await client.end();
-        console.log(result);
-
         return {
           success: true,
           query: query,
