@@ -3,11 +3,13 @@ import DB from '../../services/db/db.service';
 import authentication from '../../services/authentication/authentication.service';
 import crypto from 'crypto';
 
+import { User } from '../../models/models';
+
 export default async (request: any): Promise<RouterResponse> => {
 
   const {email, password}: {email: string, password: string} = request.params;
 
-  const res = await DB.row.read('user', { email: email });
+  const res = await DB.row.read<User[]>('user', { email: email });
 
   if (!res.success) {
     return new Promise(resolve => resolve({ 
@@ -47,7 +49,7 @@ export default async (request: any): Promise<RouterResponse> => {
     json: { 
       success: true, 
       message: [`User ${email} successfully logged in.`],
-      body: { token: authentication.generateToken({email: email, privilege: res.result[0].privilege}) }
+      body: { token: authentication.generateToken({email: email, privilege: res.result![0].privilege}) }
     } 
   })); 
 

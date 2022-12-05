@@ -46,18 +46,9 @@ app.use(express.static(path.join(__dirname, 'client')));
 app.listen(process.env.PORT || 3000, async () => {
   console.log(`CrudStore listening on port ${process.env.PORT || 3000}`);
 
-  console.log(JSON.stringify(await db.table.create(
-    'user', 
-    { 
-      id: `SERIAL`,
-      email: 'TEXT', 
-      password: 'TEXT',
-      salt: 'TEXT',
-      privilege: `TEXT`,
-      avatar: `TEXT`,
-      PRIMARY: 'KEY (email)' 
-    }
-  )));
+  for (const key of Object.keys(server.models)) {
+    console.log((await db.table.create(key, (<any>server.models)[key])).message);
+  }
 
   console.log(os.hostname());
 });
