@@ -1,3 +1,4 @@
+import e from 'express';
 import React, { Children } from 'react';
 
 export type ModalProps = {
@@ -6,7 +7,11 @@ export type ModalProps = {
 
 export const ModalContext = React.createContext<{
   toast: null | ((status: "alert" | "error" | "info" | "success" | "warning", text: string) => void),
-  modal: null | ((m?: { prompt: string, options: string[] }) => Promise<string | null> | void)
+  modal: null | ((
+    m?: 
+      { prompt: string, options: string[] } |
+      {node: React.ReactNode | React.ReactElement<any, any>, resolve: ((...args: any[]) => any), reject: ((...args: any[]) => any)}
+    ) => Promise<string | null> | void)
 }>({
   toast: null,
   modal: null
@@ -25,6 +30,8 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
     prompt: string,
     options: string[]
   }>(null);
+
+  const [_modal2, setModal2] = React.useState<null | React.ReactNode | React.ReactElement<any, any>>(null);
 
   const _modalResolve = React.useRef<((value: null | string | Promise<string | null>) => void) | null>(null);
   const _modalReject = React.useRef<((value: null | string | Promise<string | null>) => void) | null>(null);
@@ -55,17 +62,42 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
     }
   }
 
-  const modal = (m?: {prompt: string, options: string[]}): Promise<string | null> | void => {
+  const modal = (
+    m?: {prompt: string, options: string[]} |
+    {node: React.ReactNode | React.ReactElement<any, any>, resolve: ((...args: any[]) => any), reject: ((...args: any[]) => any)}
+  ): Promise<string | null> | void => {
     if (!_modal && m) {
-      return new Promise<string | null>((res, rej) => {
-        setModal({prompt: m!.prompt, options: m!.options});
-        _modalResolve.current = res;
-        _modalReject.current = rej;
-      });
+      if ("prompt" in m && "options" in m) {
+        return new Promise<string | null>((res, rej) => {
+          setModal({prompt: m!.prompt, options: m!.options});
+          _modalResolve.current = res;
+          _modalReject.current = rej;
+        });        
+      } else if ("node" in m && "resolve" in m && "reject" in m) {
+        return new Promise<string | null>((res, rej) => {
+          setModal2(m.node);
+          _modalResolve.current = m.resolve;
+          _modalReject.current = m.reject;
+        });
+      }
     } else {
+      console.log('delete');
       _modalResolve.current = null;
       _modalReject.current = null;
       setModal(null);
+      setModal2(null);
+    }
+  }
+
+  const modal2 = (m?: {node: React.ReactNode| React.ReactElement<any, any>, resolve: ((...args: any[]) => any), reject: ((...args: any[]) => any)}) => {
+    if (!_modal && !_modal2 && m) {
+      setModal2(m.node);
+      _modalResolve.current = m.resolve;
+      _modalReject.current = m.reject;
+    } else {
+      _modalResolve.current = null;
+      _modalReject.current = null;
+      setModal2(null);
     }
   }
 
@@ -77,15 +109,30 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
         }
       </ModalContext.Provider>
       {
+        (_modal2 && _modalResolve.current && _modalReject.current) && (
+          <div className="fixed left-0 top-0 w-full h-full bg-slate-500/50 z-40"
+            onClick={() => { _modalReject.current!(null); modal(); }}
+          >
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded p-5"
+              onClick={(e) => e.stopPropagation()}           
+            >
+              {_modal2}
+            </div>           
+          </div>
+        )
+      }
+      {
         (_modal && _modalResolve.current && _modalReject.current) && (
           <div className="fixed left-0 top-0 w-full h-full bg-slate-500/50 z-40"
             onClick={() => { _modalReject.current!(null); modal(); }}
           >
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded p-5">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded p-5"
+              onClick={(e) => e.stopPropagation()}
+            >
               <p className="text-xl font-bold tracking-tight text-gray-600">{_modal.prompt}</p>
               <div className="flex justify-end">
                 {
-                  _modal.options.map((opt, key) => <button className="btn btn-primary ml-3 mt-4 mb-1" key={key} onClick={(e) => {_modalResolve.current!(opt)}}>{opt}</button>)
+                  _modal.options.map((opt, key) => <button className="btn btn-primary ml-3 mt-4 mb-1" key={key} onClick={(e) => {_modalResolve.current!(opt); modal();}}>{opt}</button>)
                 }
               </div>
             </div>
@@ -98,7 +145,7 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
           toasts.map((t, i) => (
             <div className={`alert alert-${t.status} shadow-lg p-1 my-2 hover:cursor-pointer`} key={i} onClick={() => dismissToast(t.id)}>
               <div>
-                <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
+                <svg className="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
                   d={toastSVG(t.status)} 
                 /></svg>
                 <span>{t.text}</span>

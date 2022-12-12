@@ -6,7 +6,11 @@ import config from '../config/config';
 import HttpService from '../services/http.service';
 
 import { ModalContext } from '../components/modal/modal';
-import { response } from 'express';
+
+import { User, Product, Review } from '../models/models';
+import UserForm from '../components/user-form/user-form';
+import ProductCard from '../components/product-card/product-card';
+import ProductForm from '../components/product-form/product-form';
 
 const Admin: React.FC<any> = (props: any) => {
 
@@ -15,42 +19,30 @@ const Admin: React.FC<any> = (props: any) => {
   const [avatars, setAvatars] = React.useState<string[]>([]);
   const [productImages, setProductImages] = React.useState<string[]>([]);
 
-  const fetchAvatarFilenames = () => HttpService.get<{
-    success: boolean,
-    message: string[],
-    body: string[]
-  }>('avatarlist').then(res => {
-    (res.response?.success && res.response?.body) && (() => { 
-      setAvatars(res.response.body); 
-      modalContext.toast!('success', 'Successfully loaded avatar filenames.');
-      res.response.message?.forEach(m => modalContext.toast!('success', m));
-    })();
-    !(res.response?.success) && (() => {
-      res.response?.message?.forEach(m => modalContext.toast!('warning', m));
-      modalContext.toast!('warning', 'Unable to load avatar filenames. See console'); 
-      console.log(res);
-    })();
-  });
+  const [users, setUsers] = React.useState<User[]>([
+    { id: 0, email: 'test@gmail.com', avatar: '6822363841598811069-64.png', privilege: 'admin' }
+  ]);
+  const [products, setProducts] = React.useState<Product[]>([
+    { id: 0, name: 'Beef Jerky', maker: 'Jack Link\'s', price: 123, deal: 0, description: 'Beefy, chewy meat snacks', image: `71iqio6veyS._SL1500_.jpg`, tags: '', stars: 3, reviews: 0 }
+  ]);
+  const [reviews, setReviews] = React.useState<Review[]>([]);
 
-  const fetchProductImageFilenames = () => HttpService.get<{
-    success: boolean,
-    message: string[],
-    body: string[]
-  }>('productimagelist').then(res => {
+  const quickGet = async <T = void,>(route: string): Promise<T | void> => HttpService.get<{
+    success: boolean, message: string[], body: T
+  }>(route).then(res => {
     if (res.response?.success && res.response.body) {
-      setProductImages(res.response.body); 
-      modalContext.toast!('success', 'Successfully loaded product image filenames.');
+      modalContext.toast!('success', `GET request to ${route} successful.`);
       res.response.message?.forEach(m => modalContext.toast!('success', m));
+      return res.response.body;
     } else {
+      modalContext.toast!('warning', `GET request to ${route} failed.`);
       res.response?.message?.forEach(m => modalContext.toast!('warning', m));
-      modalContext.toast!('warning', 'Unable to load product image filenames. See console'); 
-      console.log(res);
     }
   });
 
   React.useEffect(() => {
-    fetchAvatarFilenames();
-    fetchProductImageFilenames();
+    quickGet<string[]>('avatarlist').then(res => setAvatars(res || []));
+    quickGet<string[]>('productimagelist').then(res => setProductImages(res || []));
   }, []);
 
   return (
@@ -165,11 +157,79 @@ const Admin: React.FC<any> = (props: any) => {
       />
       <hr />
 
-      <h1>Users</h1>
-      <Gallery ></Gallery>
+
+      <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-3 ml-3">Users</h1>
+      <table className="table-auto m-5">
+        <thead>
+          <tr>
+            <th className="px-4 py-2"></th>
+            <th className="px-4 py-2">ID</th>
+            <th className="px-4 py-2">Email</th>
+            <th className="px-4 py-2">Privilege</th>
+            <th className="px-4 py-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user, i) => (
+            <tr key={user.id}>
+              <td className="border px-4 py-2">
+                <img src={config.ASSETS[config.ENVIRONMENT] + `avatars/${user.avatar}`} className="w-8 h-8 rounded-full" />
+              </td>
+              <td className="border px-4 py-2">{user.id}</td>
+              <td className="border px-4 py-2">{user.email}</td>
+              <td className="border px-4 py-2">{user.privilege}</td>
+              <td className="border px-4 py-2">
+                <button
+                  onClick={() => {
+                    (new Promise((res, rej) => {
+                      modalContext.modal!({node: (
+                        <UserForm user={user} resolve={res} avatarList={avatars}/>
+                      ), resolve: res, reject: rej});
+                    })).then(result => {console.log(result); modalContext.modal!();}).catch(err => {});
+                  }}
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => {
+                  }}
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 ml-5 rounded"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      
       <hr />
-      <h1>Products</h1>
-      <Gallery ></Gallery>
+      <Gallery title="Products">
+        {
+          products.map((product, key) => (
+            <div
+              onClick={() => {
+                (new Promise<Product>((res, rej) => {
+                  modalContext.modal!({node: (
+                    <ProductForm product={product} resolve={res} productImageList={productImages}/>
+                  ), resolve: res, reject: rej});
+                })).then(result => {
+
+                  setProducts(prev => prev.map(prod => (prod.id !== result.id) ? prod : result));
+                  console.log('blah blah', products); 
+                  modalContext.modal!();
+                }).catch(err => {});
+              }}
+            >
+              <ProductCard key={key} product={product}/>
+            </div>
+          ))
+        }
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className='w-6'> <g> <path fill="none" d="M0 0h24v24H0z"/> <path d="M16.757 3l-2 2H5v14h14V9.243l2-2V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h12.757zm3.728-.9L21.9 3.516l-9.192 9.192-1.412.003-.002-1.417L20.485 2.1z"/> </g> </svg>
+      </Gallery>
+      <hr />
+      <Gallery title="Reviews"></Gallery>
       <hr />
     </div>
   );

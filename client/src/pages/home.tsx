@@ -24,12 +24,7 @@ const Home: React.FC<any> = (props: any) => {
       <Carousel categoryName="Top Sellers">
         {
           Array.from(Array(10)).map((n, i) => (
-            <ProductCard key={i.toString()} card={{
-              src: "https://placeimg.com/400/220/arch?t=" + Math.floor(Math.random()*100000).toString(), 
-              alt: "alt",
-              name: lorem.generateWords(1),
-              description: lorem.generateSentences(2),
-            }}/>
+            <ProductCard key={i.toString()} queryID={''}/>
           ))
         }
       </Carousel >
@@ -37,12 +32,7 @@ const Home: React.FC<any> = (props: any) => {
       <Carousel categoryName="New Products">
         {
           Array.from(Array(10)).map((n, i) => (
-            <ProductCard key={(i+100).toString()} card={{
-              src: "https://placeimg.com/400/220/arch?t=" + Math.floor(Math.random()*100000).toString(), 
-              alt: "alt",
-              name: lorem.generateWords(1),
-              description: lorem.generateSentences(2)
-            }}/>
+            <ProductCard key={(i+100).toString()} queryID={''}/>
           ))
         }
       </Carousel >
@@ -50,12 +40,7 @@ const Home: React.FC<any> = (props: any) => {
       <Carousel categoryName="Deals">
         {
           Array.from(Array(10)).map((n, i) => (
-            <ProductCard key={(i+1000).toString()} card={{
-              src: "https://placeimg.com/400/220/arch?t=" + Math.floor(Math.random()*100000).toString(), 
-              alt: "alt",
-              name: lorem.generateWords(1),
-              description: lorem.generateSentences(2)
-            }}/>
+            <ProductCard key={(i+1000).toString()} queryID={''}/>
           ))
         }
       </Carousel >
