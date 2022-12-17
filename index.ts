@@ -49,6 +49,7 @@ app.listen(process.env.PORT || 3000, async () => {
   for (const key of Object.keys(server.models)) {
     console.log((await db.table.create(key, (<any>server.models)[key])).message);
   }
+  // console.log(await db.row.stream('user', 5, 3));
 
   console.log(os.hostname());
 });

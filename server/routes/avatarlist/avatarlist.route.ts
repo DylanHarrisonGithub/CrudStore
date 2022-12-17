@@ -2,7 +2,7 @@ import { RouterResponse } from '../../services/router/router.service';
 
 import file from '../../services/file/file.service';
 
-export default async (request: any): Promise<RouterResponse> => {
+export default async (request: any): Promise<RouterResponse<string[]>> => {
 
   const aList = await file.readDirectory('/public/avatars');
 
