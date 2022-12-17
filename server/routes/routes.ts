@@ -1,3 +1,5 @@
+import userlistRoute from './userlist/userlist.route';
+import userlistSchema from './userlist/userlist.schema';
 import uploadproductimageRoute from './uploadproductimage/uploadproductimage.route';
 import uploadproductimageSchema from './uploadproductimage/uploadproductimage.schema';
 import deleteproductimageRoute from './deleteproductimage/deleteproductimage.route';
@@ -26,6 +28,13 @@ export interface Route {
 }
 
 const routes: { [key: string]: Route } = {
+ userlist: {
+    method: ['GET'],
+    contentType: "application/json",
+    privelege: ['guest'],
+    schema: userlistSchema,
+    route: userlistRoute 
+  },
  uploadproductimage: {
     method: ["POST"],
     contentType: "application/json",

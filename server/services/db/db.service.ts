@@ -71,6 +71,39 @@ const db = {
       }
     },
 
+    stream: async <T = void>(
+      table: string, 
+      afterID: number,
+      numrows: number
+    ): Promise<{ 
+      success: boolean, 
+      message: string[], 
+      query: string,
+      result?: T// { [key: string]: string | number | boolean }[] 
+    }> => {
+      const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+      const query = 
+      `SELECT * FROM "${table}" WHERE id > ${afterID} ORDER BY id ASC LIMIT ${numrows};`;
+      try {
+        await client.connect();
+        const result = <T>((await client.query(query)).rows as unknown);
+        await client.end();
+        return {
+          success: true,
+          query: query,
+          message: [`Rows successfully streamed from table ${table}.`],
+          result: result
+        }
+      } catch (error) {
+        await client.end();
+        return {
+          success: false,
+          query: query,
+          message: [`Error attempting to stream from table ${table}.`].concat(<string[]>(<any>error).stack)
+        }
+      }
+    },
+
     update: async (table: string, columns: { [key: string]: string | number | boolean }, where?: { [key: string]: string | number | boolean }): Promise<{ success: boolean, query: string, message: string[] }> => {
       
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });

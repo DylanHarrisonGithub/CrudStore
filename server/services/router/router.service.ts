@@ -3,7 +3,7 @@ import { Route } from '../../routes/routes';
 import { ParsedRequest } from '../requestParser/requestParser.service';
 import config from '../../../server/config/config';
 
-export interface RouterResponse {
+export interface RouterResponse<T = any> {
   code: number,
   headers?: { [key: string]: string },
   redirect?: string,
@@ -12,7 +12,7 @@ export interface RouterResponse {
   json?: {
     success: boolean,
     message: string[],
-    body?: any
+    body?: T
   }
 }
 

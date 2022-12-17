@@ -50,7 +50,7 @@ const HttpService = {
     return fetch(
       url ? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
-        body: body, //JSON.stringify(body),
+        body: JSON.stringify(body),
         ...options
       }
     ).then(res => res.json()).then((res: T) => {
@@ -76,7 +76,7 @@ const HttpService = {
     return fetch(
       url? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
-        body: body,
+        body: JSON.stringify(body),
         ...options
       }
     ).then(res => res.json()).then((res: T) => {
@@ -102,7 +102,7 @@ const HttpService = {
     return fetch(
       url? url : config.URI[config.ENVIRONMENT] + "api/" + route,
       {
-        body: body,
+        body: JSON.stringify(body),
         ...options
       }
     ).then(res => res.json()).then((res: T) => {

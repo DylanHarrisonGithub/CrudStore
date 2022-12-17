@@ -7,11 +7,11 @@ export type ModalProps = {
 
 export const ModalContext = React.createContext<{
   toast: null | ((status: "alert" | "error" | "info" | "success" | "warning", text: string) => void),
-  modal: null | ((
+  modal: null | (<T = void>(
     m?: 
       { prompt: string, options: string[] } |
       {node: React.ReactNode | React.ReactElement<any, any>, resolve: ((...args: any[]) => any), reject: ((...args: any[]) => any)}
-    ) => Promise<string | null> | void)
+    ) => Promise<string | null> | Promise<T | null> | void)
 }>({
   toast: null,
   modal: null
@@ -33,7 +33,7 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
 
   const [_modal2, setModal2] = React.useState<null | React.ReactNode | React.ReactElement<any, any>>(null);
 
-  const _modalResolve = React.useRef<((value: null | string | Promise<string | null>) => void) | null>(null);
+  const _modalResolve = React.useRef<((value: null | string | Promise<string | null> | Promise<any | null>) => void) | null>(null);
   const _modalReject = React.useRef<((value: null | string | Promise<string | null>) => void) | null>(null);
 
   const toast = (status: "alert" | "error" | "info" | "success" | "warning", text: string) => {
@@ -62,10 +62,10 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
     }
   }
 
-  const modal = (
+  const modal = <T = void>(
     m?: {prompt: string, options: string[]} |
-    {node: React.ReactNode | React.ReactElement<any, any>, resolve: ((...args: any[]) => any), reject: ((...args: any[]) => any)}
-  ): Promise<string | null> | void => {
+    {node: React.ReactNode | React.ReactElement<any, any>, resolve: ((...args: any[]) => T), reject: ((...args: any[]) => any)}
+  ): Promise<string | null> | Promise<T | null> | void => {
     if (!_modal && m) {
       if ("prompt" in m && "options" in m) {
         return new Promise<string | null>((res, rej) => {
@@ -74,7 +74,7 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
           _modalReject.current = rej;
         });        
       } else if ("node" in m && "resolve" in m && "reject" in m) {
-        return new Promise<string | null>((res, rej) => {
+        return new Promise<T | null>((res, rej) => {
           setModal2(m.node);
           _modalResolve.current = m.resolve;
           _modalReject.current = m.reject;
@@ -89,17 +89,17 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
     }
   }
 
-  const modal2 = (m?: {node: React.ReactNode| React.ReactElement<any, any>, resolve: ((...args: any[]) => any), reject: ((...args: any[]) => any)}) => {
-    if (!_modal && !_modal2 && m) {
-      setModal2(m.node);
-      _modalResolve.current = m.resolve;
-      _modalReject.current = m.reject;
-    } else {
-      _modalResolve.current = null;
-      _modalReject.current = null;
-      setModal2(null);
-    }
-  }
+  // const modal2 = (m?: {node: React.ReactNode| React.ReactElement<any, any>, resolve: ((...args: any[]) => any), reject: ((...args: any[]) => any)}) => {
+  //   if (!_modal && !_modal2 && m) {
+  //     setModal2(m.node);
+  //     _modalResolve.current = m.resolve;
+  //     _modalReject.current = m.reject;
+  //   } else {
+  //     _modalResolve.current = null;
+  //     _modalReject.current = null;
+  //     setModal2(null);
+  //   }
+  // }
 
   return (
     <div className="p-0 m-0">

@@ -18,10 +18,8 @@ const Admin: React.FC<any> = (props: any) => {
 
   const [avatars, setAvatars] = React.useState<string[]>([]);
   const [productImages, setProductImages] = React.useState<string[]>([]);
+  const [users, setUsers] = React.useState<User[]>([]);
 
-  const [users, setUsers] = React.useState<User[]>([
-    { id: 0, email: 'test@gmail.com', avatar: '6822363841598811069-64.png', privilege: 'admin' }
-  ]);
   const [products, setProducts] = React.useState<Product[]>([
     { id: 0, name: 'Beef Jerky', maker: 'Jack Link\'s', price: 123, deal: 0, description: 'Beefy, chewy meat snacks', image: `71iqio6veyS._SL1500_.jpg`, tags: '', stars: 3, reviews: 0 }
   ]);
@@ -43,6 +41,7 @@ const Admin: React.FC<any> = (props: any) => {
   React.useEffect(() => {
     quickGet<string[]>('avatarlist').then(res => setAvatars(res || []));
     quickGet<string[]>('productimagelist').then(res => setProductImages(res || []));
+    quickGet<User[]>('userlist').then(res => setUsers(res || []));
   }, []);
 
   return (
@@ -84,7 +83,7 @@ const Admin: React.FC<any> = (props: any) => {
       </Gallery>
       <input 
         type="file" 
-        className="m-5 file-input file-input-bordered file-input-primary w-full max-w-xs" 
+        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded m-5 file-input file-input-bordered file-input-primary w-full max-w-xs" 
         onChange={e => e.target.files?.[0] && HttpService.upload<{
           success: boolean,
           message: string[],
@@ -103,7 +102,6 @@ const Admin: React.FC<any> = (props: any) => {
         })}
       />
       <hr />
-
 
       {/* ------------------------------------------------------- PRODUCT IMAGES ------------------------------------------------------- */}
       <Gallery title="Product Images">
@@ -138,7 +136,7 @@ const Admin: React.FC<any> = (props: any) => {
       </Gallery>
       <input 
         type="file" 
-        className="m-5 file-input file-input-bordered file-input-primary w-full max-w-xs" 
+        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded m-5 file-input file-input-bordered file-input-primary w-full max-w-xs" 
         onChange={e => e.target.files?.[0] && HttpService.upload<{
           success: boolean,
           message: string[],
@@ -157,7 +155,7 @@ const Admin: React.FC<any> = (props: any) => {
       />
       <hr />
 
-
+      {/* ------------------------------------------------------- USERS ------------------------------------------------------- */}
       <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-3 ml-3">Users</h1>
       <table className="table-auto m-5">
         <thead>
@@ -182,7 +180,7 @@ const Admin: React.FC<any> = (props: any) => {
                 <button
                   onClick={() => {
                     (new Promise((res, rej) => {
-                      modalContext.modal!({node: (
+                      modalContext.modal!<User>({node: (
                         <UserForm user={user} resolve={res} avatarList={avatars}/>
                       ), resolve: res, reject: rej});
                     })).then(result => {console.log(result); modalContext.modal!();}).catch(err => {});
@@ -203,32 +201,67 @@ const Admin: React.FC<any> = (props: any) => {
           ))}
         </tbody>
       </table>
-      
+      <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded">CREATE NEW USER</button>
+
       <hr />
+
+      {/* ------------------------------------------------------- PRODUCTS ------------------------------------------------------- */}
       <Gallery title="Products">
         {
           products.map((product, key) => (
             <div
-              onClick={() => {
-                (new Promise<Product>((res, rej) => {
-                  modalContext.modal!({node: (
-                    <ProductForm product={product} resolve={res} productImageList={productImages}/>
-                  ), resolve: res, reject: rej});
-                })).then(result => {
-
-                  setProducts(prev => prev.map(prod => (prod.id !== result.id) ? prod : result));
-                  console.log('blah blah', products); 
-                  modalContext.modal!();
-                }).catch(err => {});
-              }}
+              className='relative'
             >
+              <p 
+                className="absolute -right-3 -top-3 bg-red-500 p-1 rounded-full w-6 h-6 cursor-pointer border-2 border-black z-10"
+                onClick={() => (modalContext.modal!({prompt: `Are you sure you want to delete\n ${product.name}?`, options: ["yes", "no"]}))!.then(res => {
+                  if (res === "yes") {
+                    HttpService.delete<{
+                      success: boolean,
+                      message: string[]
+                    }>('deleteproduct', { id: product.id }).then(res => {
+                      if (res.response?.success) {
+                        
+                        res.response.message?.forEach(m => modalContext.toast!('success', m));
+                      } else {
+                        modalContext.toast!('warning', `Unable to delete product ${product.name}`);
+                        res.response?.message?.forEach(m => modalContext.toast!('warning', m));
+                      }
+                    });
+                  }
+                }).catch(e => {})}
+              >
+                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">X</span>
+              </p>
+              <p 
+                className="absolute right-5 -top-3 bg-green-300 p-1 rounded-full w-6 h-6 cursor-pointer border-2 border-black z-10"
+                onClick={() => {
+                  (new Promise<Product>((res, rej) => {
+                    modalContext.modal!({node: (
+                      <ProductForm product={product} resolve={res} productImageList={productImages}/>
+                    ), resolve: res, reject: rej});
+                  })).then(result => {
+  
+                    setProducts(prev => prev.map(prod => (prod.id !== result.id) ? prod : result));
+                    console.log('blah blah', products); 
+                    modalContext.modal!();
+                  }).catch(err => {});
+                }}
+              >
+                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className='w-6'> <g> <path fill="none" d="M0 0h24v24H0z"/> <path d="M16.757 3l-2 2H5v14h14V9.243l2-2V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h12.757zm3.728-.9L21.9 3.516l-9.192 9.192-1.412.003-.002-1.417L20.485 2.1z"/> </g> </svg>
+                </span>
+              </p>
               <ProductCard key={key} product={product}/>
             </div>
           ))
         }
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className='w-6'> <g> <path fill="none" d="M0 0h24v24H0z"/> <path d="M16.757 3l-2 2H5v14h14V9.243l2-2V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h12.757zm3.728-.9L21.9 3.516l-9.192 9.192-1.412.003-.002-1.417L20.485 2.1z"/> </g> </svg>
+      
       </Gallery>
+      <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded">CREATE NEW PRODUCT</button>
       <hr />
+      
+      {/* ------------------------------------------------------- REVIEWS ------------------------------------------------------- */}
       <Gallery title="Reviews"></Gallery>
       <hr />
     </div>
