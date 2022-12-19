@@ -179,18 +179,31 @@ const Admin: React.FC<any> = (props: any) => {
               <td className="border px-4 py-2">
                 <button
                   onClick={() => {
-                    (new Promise((res, rej) => {
-                      modalContext.modal!<User>({node: (
+                    (new Promise<User>((res, rej) => {
+                      modalContext.modal!({node: (
                         <UserForm user={user} resolve={res} avatarList={avatars}/>
                       ), resolve: res, reject: rej});
-                    })).then(result => {console.log(result); modalContext.modal!();}).catch(err => {});
+                    })).then(async ({ id, ...rest }) => {
+                      modalContext.modal!();
+                      // const { id, ...rest } = result;
+                      const updateResponse = await HttpService.patch<{success: boolean, message: string[]}>('userupdate', { id: user.id, update: rest});
+                      updateResponse.response?.message.forEach(m => modalContext.toast!(updateResponse.response?.success ? 'success' : 'warning', m));
+                      if (updateResponse.response?.success) {
+                        quickGet<User[]>('userlist').then(res => setUsers(res || []));
+                      }
+                    }).catch(err => {});
                   }}
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 >
                   Edit
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    const confirmed = (await modalContext.modal!({ prompt: `Are you sure you want to delete user: ${user.email}?`, options: ['yes', 'no']})!) === 'yes';
+                    confirmed && HttpService.delete<{success: boolean, message: string[]}>('userdelete', { id: user.id }).then(res => {
+                      res.response?.message.forEach(m => modalContext.toast!(res.response?.success ? 'success' : 'warning', m));
+                      quickGet<User[]>('userlist').then(res => setUsers(res || []));
+                    });
                   }}
                   className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 ml-5 rounded"
                 >
@@ -210,6 +223,7 @@ const Admin: React.FC<any> = (props: any) => {
         {
           products.map((product, key) => (
             <div
+              key={key}
               className='relative'
             >
               <p 

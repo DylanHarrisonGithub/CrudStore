@@ -7,11 +7,11 @@ export type ModalProps = {
 
 export const ModalContext = React.createContext<{
   toast: null | ((status: "alert" | "error" | "info" | "success" | "warning", text: string) => void),
-  modal: null | (<T = void>(
+  modal: null | ((
     m?: 
       { prompt: string, options: string[] } |
       {node: React.ReactNode | React.ReactElement<any, any>, resolve: ((...args: any[]) => any), reject: ((...args: any[]) => any)}
-    ) => Promise<string | null> | Promise<T | null> | void)
+    ) => Promise<string | null> | void)
 }>({
   toast: null,
   modal: null
@@ -62,26 +62,24 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
     }
   }
 
-  const modal = <T = void>(
+  const modal = (
     m?: {prompt: string, options: string[]} |
-    {node: React.ReactNode | React.ReactElement<any, any>, resolve: ((...args: any[]) => T), reject: ((...args: any[]) => any)}
-  ): Promise<string | null> | Promise<T | null> | void => {
+    {node: React.ReactNode | React.ReactElement<any, any>, resolve: ((...args: any[]) => any), reject: ((...args: any[]) => any)}
+  ): Promise<string | null> | void => {
     if (!_modal && m) {
       if ("prompt" in m && "options" in m) {
         return new Promise<string | null>((res, rej) => {
-          setModal({prompt: m!.prompt, options: m!.options});
           _modalResolve.current = res;
           _modalReject.current = rej;
+          setModal({prompt: m!.prompt, options: m!.options});
         });        
       } else if ("node" in m && "resolve" in m && "reject" in m) {
-        return new Promise<T | null>((res, rej) => {
-          setModal2(m.node);
-          _modalResolve.current = m.resolve;
-          _modalReject.current = m.reject;
-        });
+        _modalResolve.current = m.resolve;
+        _modalReject.current = m.reject;
+        setModal2(m.node);
       }
     } else {
-      console.log('delete');
+      // console.log('delete');
       _modalResolve.current = null;
       _modalReject.current = null;
       setModal(null);

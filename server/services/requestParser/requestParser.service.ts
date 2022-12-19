@@ -1,14 +1,14 @@
 import express from 'express';
 import url = require('url');
 
-export type ParsedRequest = {
+export type ParsedRequest<T = any> = {
   ip: string,
   timestamp: number,
   method: string,
   accepts: string,
   route: string,
   token: any,
-  params: any,
+  params: T,
   files: any
 }
 
