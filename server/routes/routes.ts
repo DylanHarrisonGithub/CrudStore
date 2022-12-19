@@ -1,3 +1,7 @@
+import userdeleteRoute from './userdelete/userdelete.route';
+import userdeleteSchema from './userdelete/userdelete.schema';
+import userupdateRoute from './userupdate/userupdate.route';
+import userupdateSchema from './userupdate/userupdate.schema';
 import userlistRoute from './userlist/userlist.route';
 import userlistSchema from './userlist/userlist.schema';
 import uploadproductimageRoute from './uploadproductimage/uploadproductimage.route';
@@ -28,6 +32,20 @@ export interface Route {
 }
 
 const routes: { [key: string]: Route } = {
+ userdelete: {
+    method: ['DELETE'],
+    contentType: "application/json",
+    privelege: ['guest'],
+    schema: userdeleteSchema,
+    route: userdeleteRoute 
+  },
+ userupdate: {
+    method: ['PATCH'],
+    contentType: "application/json",
+    privelege: ['guest'],
+    schema: userupdateSchema,
+    route: userupdateRoute 
+  },
  userlist: {
     method: ['GET'],
     contentType: "application/json",

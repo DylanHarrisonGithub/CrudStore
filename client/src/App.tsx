@@ -19,9 +19,9 @@ import Admin from './pages/admin';
 
 function App() {
 
-  console.log(process.env.NODE_ENV);
-  console.log(process.env.PUBLIC_URL);
-  console.log(process.env.TZ);
+  // console.log(process.env.NODE_ENV);
+  // console.log(process.env.PUBLIC_URL);
+  // console.log(process.env.TZ);
 
   return (
     <div className="container mx-auto">
