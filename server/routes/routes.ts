@@ -1,3 +1,7 @@
+import productsRoute from './products/products.route';
+import productsSchema from './products/products.schema';
+import productcreateRoute from './productcreate/productcreate.route';
+import productcreateSchema from './productcreate/productcreate.schema';
 import userdeleteRoute from './userdelete/userdelete.route';
 import userdeleteSchema from './userdelete/userdelete.schema';
 import userupdateRoute from './userupdate/userupdate.route';
@@ -32,6 +36,20 @@ export interface Route {
 }
 
 const routes: { [key: string]: Route } = {
+ products: {
+    method: ['GET'],
+    contentType: "application/json",
+    privelege: ['guest'],
+    schema: productsSchema,
+    route: productsRoute 
+  },
+ productcreate: {
+    method: ['POST'],
+    contentType: "application/json",
+    privelege: ['guest'],
+    schema: productcreateSchema,
+    route: productcreateRoute 
+  },
  userdelete: {
     method: ['DELETE'],
     contentType: "application/json",

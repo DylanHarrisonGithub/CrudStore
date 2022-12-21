@@ -5,21 +5,22 @@ const quoteString = (val: string | number | boolean): string | number | boolean 
 const db = {
 
   row: {
-    create: async (table: string, row: { [key: string]: string | number | boolean }): Promise<{ success: boolean, query: string, message: string[] }> => {
+    create: async <T = void>(table: string, row: { [key: string]: string | number | boolean }): Promise<{ success: boolean, query: string, message: string[], result?: T }> => {
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `INSERT INTO "${table}" (${
           Object.keys(row).map((key, index) => index !== Object.keys(row).length -1 ? key + ', ' : key).join("")
         }) VALUES (${
           Object.keys(row).map((key, index) => index !== Object.keys(row).length -1 ? quoteString(row[key]) + ', ' : quoteString(row[key])).join("")
-      });`;
+      }) RETURNING *;`;
       try {
         await client.connect();
-        await client.query(query);
+        const result = <T>(((await client.query(query)).rows as unknown[])[0]);
         await client.end();
         return {
           success: true,
           query: query,
-          message: [`Row successfully inserted into table ${table}.`]
+          message: [`Row successfully inserted into table ${table}.`],
+          result: result
         }
       } catch (error) {
         await client.end();
