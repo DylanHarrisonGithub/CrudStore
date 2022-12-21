@@ -21,7 +21,7 @@ const Admin: React.FC<any> = (props: any) => {
   const [users, setUsers] = React.useState<User[]>([]);
 
   const [products, setProducts] = React.useState<Product[]>([
-    { id: 0, name: 'Beef Jerky', maker: 'Jack Link\'s', price: 123, deal: 0, description: 'Beefy, chewy meat snacks', image: `71iqio6veyS._SL1500_.jpg`, tags: '', stars: 3, reviews: 0 }
+    // { id: 0, name: 'Beef Jerky', maker: 'Jack Link\'s', price: 123, deal: 0, description: 'Beefy, chewy meat snacks', image: `71iqio6veyS._SL1500_.jpg`, tags: '', stars: 3, reviews: 0 }
   ]);
   const [reviews, setReviews] = React.useState<Review[]>([]);
 
@@ -42,6 +42,7 @@ const Admin: React.FC<any> = (props: any) => {
     quickGet<string[]>('avatarlist').then(res => setAvatars(res || []));
     quickGet<string[]>('productimagelist').then(res => setProductImages(res || []));
     quickGet<User[]>('userlist').then(res => setUsers(res || []));
+    quickGet<Product[]>('products').then(res => setProducts(res || []));
   }, []);
 
   return (
@@ -214,12 +215,55 @@ const Admin: React.FC<any> = (props: any) => {
           ))}
         </tbody>
       </table>
-      <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded">CREATE NEW USER</button>
 
       <hr />
 
       {/* ------------------------------------------------------- PRODUCTS ------------------------------------------------------- */}
-      <Gallery title="Products">
+      <div className="md:flex md:items-center mt-4">
+        <div className="md:w-1/3">
+          <label
+            className="text-2xl font-bold tracking-tight text-gray-900 ml-3 inline-block"
+            htmlFor="inline-product-search"
+          >
+            Products
+          </label>
+        </div>
+       
+        <div className="md:w-2/3 mr-3">
+
+          <input
+            className="bg-gray-200 text-right appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
+            id="inline-product-search"
+            type="text"
+            placeholder="Product Search"
+            value={''}
+            onInput={(event: React.ChangeEvent<HTMLInputElement>) => {}}
+          />
+        </div>
+
+      </div>
+      <button 
+        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded"
+        onClick={() => {
+          (new Promise<Product>((res, rej) => {
+            modalContext.modal!({node: (
+              <ProductForm resolve={res} productImageList={productImages}/>
+            ), resolve: res, reject: rej});
+          })).then(async result => {
+            modalContext.modal!();
+            const newProductResponse = await HttpService.post<{success: boolean, message: string[], body?: Product}>('productcreate', result);
+            if (newProductResponse.response?.success && newProductResponse.response?.body) {
+              setProducts(prev => [ newProductResponse.response!.body!, ...prev]);
+            }
+            newProductResponse.response?.message.forEach(m => modalContext.toast!(newProductResponse.response?.success ? 'success' : 'warning', m));
+            //setProducts(prev => [ result, ...prev]);
+          }).catch(err => {});
+        }}
+      >
+        CREATE NEW PRODUCT
+      </button>
+      
+      <Gallery>
         {
           products.map((product, key) => (
             <div
@@ -255,7 +299,6 @@ const Admin: React.FC<any> = (props: any) => {
                       <ProductForm product={product} resolve={res} productImageList={productImages}/>
                     ), resolve: res, reject: rej});
                   })).then(result => {
-  
                     setProducts(prev => prev.map(prod => (prod.id !== result.id) ? prod : result));
                     console.log('blah blah', products); 
                     modalContext.modal!();
@@ -272,7 +315,7 @@ const Admin: React.FC<any> = (props: any) => {
         }
       
       </Gallery>
-      <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded">CREATE NEW PRODUCT</button>
+
       <hr />
       
       {/* ------------------------------------------------------- REVIEWS ------------------------------------------------------- */}

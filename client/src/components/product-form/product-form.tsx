@@ -5,14 +5,16 @@ import config from '../../config/config';
 import { Product } from '../../models/models';
 
 interface ProductProps {
-  product: Product,
+  product?: Product,
   productImageList: string[],
   resolve: (product: Product) => any
 }
 
 const ProductForm: React.FC<ProductProps> = (props) => {
 
-  const [product, setProduct] = useState<Product>(props.product);
+  const [product, setProduct] = useState<Product>(props.product || 
+    { id: 0, name: '', maker: '', price: 0, deal: 0, description: '', image: props.productImageList[0], tags: '', stars: 0, reviews: 0 }
+  );
 
   return (
     <form className="w-full max-w-sm">
