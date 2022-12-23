@@ -53,7 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = (props: ProductCardProps) => {
   }, [props.product]);
 
   return (
-    <div className="card card-compact bg-base-100 shadow-xl">
+    <div className="card card-compact bg-base-100 shadow-xl text-gray-500">
       <figure><img src={config.ASSETS[config.ENVIRONMENT] + `products/${product.image}`} alt={"img source missing"} /></figure>
       <div className="card-body">
         <h2 className="card-title">{`${product.maker} ${product.name}`}</h2>
