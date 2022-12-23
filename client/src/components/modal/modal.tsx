@@ -137,7 +137,7 @@ const Modal: React.FC<ModalProps> = (props: ModalProps) => {
           </div>
         )
       }
-      <div className="fixed bottom-0 container p-4 z-50">
+      <div className="fixed bottom-0 container p-4 z-50 transition-all duration-500 ease-in-out">
 
         {
           toasts.map((t, i) => (

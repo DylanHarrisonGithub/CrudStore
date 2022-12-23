@@ -11,6 +11,11 @@ import { User, Product, Review } from '../models/models';
 import UserForm from '../components/user-form/user-form';
 import ProductCard from '../components/product-card/product-card';
 import ProductForm from '../components/product-form/product-form';
+import ToggleableContainer from '../components/toggleable-container/toggleable-container';
+import AvatarImages from '../components/admin/avatar-images/avatar-images';
+import ProductImages from '../components/admin/product-images/product-images';
+import Users from '../components/admin/users/users';
+import Products from '../components/admin/products/products';
 
 const Admin: React.FC<any> = (props: any) => {
 
@@ -39,187 +44,37 @@ const Admin: React.FC<any> = (props: any) => {
   });
 
   React.useEffect(() => {
-    quickGet<string[]>('avatarlist').then(res => setAvatars(res || []));
-    quickGet<string[]>('productimagelist').then(res => setProductImages(res || []));
-    quickGet<User[]>('userlist').then(res => setUsers(res || []));
-    quickGet<Product[]>('products').then(res => setProducts(res || []));
+    
+    // quickGet<Product[]>('products').then(res => setProducts(res || []));
   }, []);
 
   return (
     <div className="card w-5/6 bg-base-100 shadow-xl mx-auto my-2">
       <h1 className="text-center text-4xl font-bold">Admin</h1>
 
-      <hr />
-
       {/* ------------------------------------------------------- AVATAR IMAGES ------------------------------------------------------- */}
-      <Gallery title="Avatar Images">
-        {
-          avatars.map(a => (
-            <span key={a} className="relative">
-              <p 
-                className="absolute -right-3 -top-3 bg-red-500 p-1 rounded-full w-6 h-6 cursor-pointer border-2 border-black"
-                onClick={() => (modalContext.modal!({prompt: `Are you sure you want to delete\n ${a}?`, options: ["yes", "no"]}))!.then(res => {
-                  if (res === "yes") {
-                    HttpService.delete<{
-                      success: boolean,
-                      message: string[]
-                    }>('deleteavatar', { filename: a }).then(res => {
-                      if (res.response?.success) {
-                        setAvatars(avatarList => avatarList.filter(avatarListFilename => avatarListFilename !== a));
-                        res.response.message?.forEach(m => modalContext.toast!('success', m));
-                      } else {
-                        modalContext.toast!('warning', `Unable to delete avatar ${a}`);
-                        res.response?.message?.forEach(m => modalContext.toast!('warning', m));
-                      }
-                    });
-                  }
-                }).catch(e => {})}
-              >
-                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">X</span>
-              </p>
-              <img className="inline-block" width={64} height={64} src={config.ASSETS[config.ENVIRONMENT] + `avatars/${a}`}></img>
-            </span>
-          ))
-        }
-      </Gallery>
-      <input 
-        type="file" 
-        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded m-5 file-input file-input-bordered file-input-primary w-full max-w-xs" 
-        onChange={e => e.target.files?.[0] && HttpService.upload<{
-          success: boolean,
-          message: string[],
-          body: string[]
-        }>('uploadavatar', e.target.files[0]).then(res => {
-          (res.response?.success && res.response?.body) && (() => {
-            setAvatars(res.response!.body);
-            modalContext.toast!('success', 'Successfully loaded avatar filenames.');
-            res.response.message?.forEach(m => modalContext.toast!('success', m));
-          })();
-          !(res.response?.success) && (() => {
-            res.response?.message?.forEach(m => modalContext.toast!('warning', m));
-            modalContext.toast!('warning', 'Unable to load avatar filenames. See console'); 
-            console.log(res);
-          })();
-        })}
-      />
-      <hr />
+      <ToggleableContainer title="AVATAR IMAGES">
+        <AvatarImages avatarImages={avatars} setAvatarImages={setAvatars} quickGet={quickGet}></AvatarImages>
+      </ToggleableContainer>
 
       {/* ------------------------------------------------------- PRODUCT IMAGES ------------------------------------------------------- */}
-      <Gallery title="Product Images">
-        {
-          productImages.map(a => (
-            <span key={a} className="relative">
-              <p 
-                className="absolute -right-3 -top-3 bg-red-500 p-1 rounded-full w-6 h-6 cursor-pointer border-2 border-black"
-                onClick={() => (modalContext.modal!({prompt: `Are you sure you want to delete\n ${a}?`, options: ["yes", "no"]}))!.then(res => {
-                  if (res === "yes") {
-                    HttpService.delete<{
-                      success: boolean,
-                      message: string[]
-                    }>('deleteproductimage', { filename: a }).then(res => {
-                      if (res.response?.success) {
-                        setProductImages(productImageList => productImageList.filter(productImageFilename => productImageFilename !== a))
-                        res.response.message?.forEach(m => modalContext.toast!('success', m));
-                      } else {
-                        modalContext.toast!('warning', `Unable to delete product image ${a}`);
-                        res.response?.message?.forEach(m => modalContext.toast!('warning', m));
-                      }
-                    });
-                  }
-                }).catch(e => {})}
-              >
-                <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">X</span>
-              </p>
-              <img className="inline-block" width={64} height={64} src={config.ASSETS[config.ENVIRONMENT] + `products/${a}`}></img>
-            </span>
-          ))
-        }
-      </Gallery>
-      <input 
-        type="file" 
-        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded m-5 file-input file-input-bordered file-input-primary w-full max-w-xs" 
-        onChange={e => e.target.files?.[0] && HttpService.upload<{
-          success: boolean,
-          message: string[],
-          body: string[]
-        }>('uploadproductimage', e.target.files[0]).then(res => {
-          (res.response?.success && res.response?.body) && (() => {
-            setProductImages(res.response!.body);
-            res.response.message?.forEach(m => modalContext.toast!('success', m));
-          })();
-          !(res.response?.success) && (() => {
-            modalContext.toast!('warning', 'Unable to load product image filenames. See console');
-            res.response?.message?.forEach(m => modalContext.toast!('warning', m));
-            console.log(res);
-          })();
-        })}
-      />
-      <hr />
+      <ToggleableContainer title="PRODUCT IMAGES" color1='accent'>
+        <ProductImages productImages={productImages} setProductImages={setProductImages} quickGet={quickGet}></ProductImages>
+      </ToggleableContainer>
 
       {/* ------------------------------------------------------- USERS ------------------------------------------------------- */}
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900 mb-3 ml-3">Users</h1>
-      <table className="table-auto m-5">
-        <thead>
-          <tr>
-            <th className="px-4 py-2"></th>
-            <th className="px-4 py-2">ID</th>
-            <th className="px-4 py-2">Email</th>
-            <th className="px-4 py-2">Privilege</th>
-            <th className="px-4 py-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user, i) => (
-            <tr key={user.id}>
-              <td className="border px-4 py-2">
-                <img src={config.ASSETS[config.ENVIRONMENT] + `avatars/${user.avatar}`} className="w-8 h-8 rounded-full" />
-              </td>
-              <td className="border px-4 py-2">{user.id}</td>
-              <td className="border px-4 py-2">{user.email}</td>
-              <td className="border px-4 py-2">{user.privilege}</td>
-              <td className="border px-4 py-2">
-                <button
-                  onClick={() => {
-                    (new Promise<User>((res, rej) => {
-                      modalContext.modal!({node: (
-                        <UserForm user={user} resolve={res} avatarList={avatars}/>
-                      ), resolve: res, reject: rej});
-                    })).then(async ({ id, ...rest }) => {
-                      modalContext.modal!();
-                      // const { id, ...rest } = result;
-                      const updateResponse = await HttpService.patch<{success: boolean, message: string[]}>('userupdate', { id: user.id, update: rest});
-                      updateResponse.response?.message.forEach(m => modalContext.toast!(updateResponse.response?.success ? 'success' : 'warning', m));
-                      if (updateResponse.response?.success) {
-                        quickGet<User[]>('userlist').then(res => setUsers(res || []));
-                      }
-                    }).catch(err => {});
-                  }}
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={async () => {
-                    const confirmed = (await modalContext.modal!({ prompt: `Are you sure you want to delete user: ${user.email}?`, options: ['yes', 'no']})!) === 'yes';
-                    confirmed && HttpService.delete<{success: boolean, message: string[]}>('userdelete', { id: user.id }).then(res => {
-                      res.response?.message.forEach(m => modalContext.toast!(res.response?.success ? 'success' : 'warning', m));
-                      quickGet<User[]>('userlist').then(res => setUsers(res || []));
-                    });
-                  }}
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 ml-5 rounded"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
 
-      <hr />
+      <ToggleableContainer title="Users" color1='purple-500'>
+        <Users users={users} avatarImages={avatars} setUsers={setUsers} quickGet={quickGet}></Users>
+      </ToggleableContainer>
 
       {/* ------------------------------------------------------- PRODUCTS ------------------------------------------------------- */}
-      <div className="md:flex md:items-center mt-4">
+
+      <ToggleableContainer title="Products" color1='red-500'>
+        <Products products={products} productImages={productImages} setProducts={setProducts} quickGet={quickGet}></Products>
+      </ToggleableContainer>
+
+      {/* <div className="md:flex md:items-center mt-4">
         <div className="md:w-1/3">
           <label
             className="text-2xl font-bold tracking-tight text-gray-900 ml-3 inline-block"
@@ -314,7 +169,7 @@ const Admin: React.FC<any> = (props: any) => {
           ))
         }
       
-      </Gallery>
+      </Gallery> */}
 
       <hr />
       
