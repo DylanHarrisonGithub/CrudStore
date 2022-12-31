@@ -19,7 +19,8 @@ const AvatarImages: React.FC<Props> = ({avatarImages, setAvatarImages, quickGet}
 
   React.useEffect(() => {
     if (init.current) {
-      quickGet<string[]>('avatarlist').then(res => setAvatarImages(res || []));
+      quickGet<string[]>('avatarlist').then(res => setAvatarImages(res || [])
+      );
       init.current = false;
     }
   }, [avatarImages]);
@@ -34,16 +35,13 @@ const AvatarImages: React.FC<Props> = ({avatarImages, setAvatarImages, quickGet}
                 className="absolute -right-3 -top-3 bg-red-500 p-1 rounded-full w-6 h-6 cursor-pointer border-2 border-black"
                 onClick={() => (modalContext.modal!({prompt: `Are you sure you want to delete\n ${a}?`, options: ["yes", "no"]}))!.then(res => {
                   if (res === "yes") {
-                    HttpService.delete<{
-                      success: boolean,
-                      message: string[]
-                    }>('deleteavatar', { filename: a }).then(res => {
-                      if (res.response?.success) {
+                    HttpService.delete<void>('deleteavatar', { filename: a }).then(res => {
+                      if (res.success) {
                         setAvatarImages(avatarList => avatarList.filter(avatarListFilename => avatarListFilename !== a));
-                        res.response.message?.forEach(m => modalContext.toast!('success', m));
+                        res.messages.forEach(m => modalContext.toast!('success', m));
                       } else {
                         modalContext.toast!('warning', `Unable to delete avatar ${a}`);
-                        res.response?.message?.forEach(m => modalContext.toast!('warning', m));
+                        res.messages.forEach(m => modalContext.toast!('warning', m));
                       }
                     });
                   }
@@ -59,18 +57,14 @@ const AvatarImages: React.FC<Props> = ({avatarImages, setAvatarImages, quickGet}
       <input 
         type="file" 
         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded m-5 file-input file-input-bordered file-input-primary w-full max-w-xs" 
-        onChange={e => e.target.files?.[0] && HttpService.upload<{
-          success: boolean,
-          message: string[],
-          body: string[]
-        }>('uploadavatar', e.target.files[0]).then(res => {
-          (res.response?.success && res.response?.body) && (() => {
-            setAvatarImages(res.response!.body);
+        onChange={e => e.target.files?.[0] && HttpService.upload<string[]>('uploadavatar', e.target.files[0]).then(res => {
+          (res.success && res.body) && (() => {
+            setAvatarImages(res.body);
             modalContext.toast!('success', 'Successfully loaded avatar filenames.');
-            res.response.message?.forEach(m => modalContext.toast!('success', m));
+            res.messages.forEach(m => modalContext.toast!('success', m));
           })();
-          !(res.response?.success) && (() => {
-            res.response?.message?.forEach(m => modalContext.toast!('warning', m));
+          !(res.success) && (() => {
+            res.messages.forEach(m => modalContext.toast!('warning', m));
             modalContext.toast!('warning', 'Unable to load avatar filenames. See console'); 
             console.log(res);
           })();
