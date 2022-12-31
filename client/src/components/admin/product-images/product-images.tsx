@@ -35,16 +35,13 @@ const ProductImages: React.FC<Props> = ({productImages, setProductImages, quickG
                 className="absolute -right-3 -top-3 bg-red-500 p-1 rounded-full w-6 h-6 cursor-pointer border-2 border-black"
                 onClick={() => (modalContext.modal!({prompt: `Are you sure you want to delete\n ${a}?`, options: ["yes", "no"]}))!.then(res => {
                   if (res === "yes") {
-                    HttpService.delete<{
-                      success: boolean,
-                      message: string[]
-                    }>('deleteproductimage', { filename: a }).then(res => {
-                      if (res.response?.success) {
+                    HttpService.delete<void>('deleteproductimage', { filename: a }).then(res => {
+                      if (res.success) {
                         setProductImages(productImageList => productImageList.filter(productImageFilename => productImageFilename !== a))
-                        res.response.message?.forEach(m => modalContext.toast!('success', m));
+                        res.messages.forEach(m => modalContext.toast!('success', m));
                       } else {
                         modalContext.toast!('warning', `Unable to delete product image ${a}`);
-                        res.response?.message?.forEach(m => modalContext.toast!('warning', m));
+                        res.messages.forEach(m => modalContext.toast!('warning', m));
                       }
                     });
                   }
@@ -60,18 +57,14 @@ const ProductImages: React.FC<Props> = ({productImages, setProductImages, quickG
       <input 
         type="file" 
         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 mx-5 my-5 rounded m-5 file-input file-input-bordered file-input-primary w-full max-w-xs" 
-        onChange={e => e.target.files?.[0] && HttpService.upload<{
-          success: boolean,
-          message: string[],
-          body: string[]
-        }>('uploadproductimage', e.target.files[0]).then(res => {
-          (res.response?.success && res.response?.body) && (() => {
-            setProductImages(res.response!.body);
-            res.response.message?.forEach(m => modalContext.toast!('success', m));
+        onChange={e => e.target.files?.[0] && HttpService.upload<string[]>('uploadproductimage', e.target.files[0]).then(res => {
+          (res.success && res.body) && (() => {
+            setProductImages(res.body);
+            res.messages.forEach(m => modalContext.toast!('success', m));
           })();
-          !(res.response?.success) && (() => {
+          !(res.success) && (() => {
             modalContext.toast!('warning', 'Unable to load product image filenames. See console');
-            res.response?.message?.forEach(m => modalContext.toast!('warning', m));
+            res.messages.forEach(m => modalContext.toast!('warning', m));
             console.log(res);
           })();
         })}

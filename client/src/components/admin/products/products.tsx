@@ -43,12 +43,11 @@ const Products: React.FC<Props> = ({products, productImages, setProducts, quickG
                 ), resolve: res, reject: rej});
               })).then(async result => {
                 modalContext.modal!();
-                const newProductResponse = await HttpService.post<{success: boolean, message: string[], body?: Product}>('productcreate', result);
-                if (newProductResponse.response?.success && newProductResponse.response?.body) {
-                  setProducts(prev => [ newProductResponse.response!.body!, ...prev]);
+                const newProductResponse = await HttpService.post<Product>('productcreate', result);
+                if (newProductResponse.success && newProductResponse.body) {
+                  setProducts(prev => [ newProductResponse.body!, ...prev]);
                 }
-                newProductResponse.response?.message.forEach(m => modalContext.toast!(newProductResponse.response?.success ? 'success' : 'warning', m));
-                //setProducts(prev => [ result, ...prev]);
+                newProductResponse.messages.forEach(m => modalContext.toast!(newProductResponse.success ? 'success' : 'warning', m));
               }).catch(err => {});
             }}
           >
@@ -82,16 +81,13 @@ const Products: React.FC<Props> = ({products, productImages, setProducts, quickG
                 className="absolute -right-3 -top-3 bg-red-500 p-1 rounded-full w-6 h-6 cursor-pointer border-2 border-black z-10"
                 onClick={() => (modalContext.modal!({prompt: `Are you sure you want to delete\n ${product.name}?`, options: ["yes", "no"]}))!.then(res => {
                   if (res === "yes") {
-                    HttpService.delete<{
-                      success: boolean,
-                      message: string[]
-                    }>('deleteproduct', { id: product.id }).then(res => {
-                      if (res.response?.success) {
+                    HttpService.delete<void>('deleteproduct', { id: product.id }).then(res => {
+                      if (res.success) {
                         
-                        res.response.message?.forEach(m => modalContext.toast!('success', m));
+                        res.messages.forEach(m => modalContext.toast!('success', m));
                       } else {
                         modalContext.toast!('warning', `Unable to delete product ${product.name}`);
-                        res.response?.message?.forEach(m => modalContext.toast!('warning', m));
+                        res.messages.forEach(m => modalContext.toast!('warning', m));
                       }
                     });
                   }

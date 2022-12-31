@@ -60,9 +60,9 @@ const Users: React.FC<Props> = ({users, avatarImages, setUsers, quickGet}) => {
                     })).then(async ({ id, ...rest }) => {
                       modalContext.modal!();
                       // const { id, ...rest } = result;
-                      const updateResponse = await HttpService.patch<{success: boolean, message: string[]}>('userupdate', { id: user.id, update: rest});
-                      updateResponse.response?.message.forEach(m => modalContext.toast!(updateResponse.response?.success ? 'success' : 'warning', m));
-                      if (updateResponse.response?.success) {
+                      const updateResponse = await HttpService.patch<void>('userupdate', { id: user.id, update: rest});
+                      updateResponse.messages.forEach(m => modalContext.toast!(updateResponse.success ? 'success' : 'warning', m));
+                      if (updateResponse.success) {
                         quickGet<User[]>('userlist').then(res => setUsers(res || []));
                       }
                     }).catch(err => {});
@@ -74,8 +74,8 @@ const Users: React.FC<Props> = ({users, avatarImages, setUsers, quickGet}) => {
                 <button
                   onClick={async () => {
                     const confirmed = (await modalContext.modal!({ prompt: `Are you sure you want to delete user: ${user.email}?`, options: ['yes', 'no']})!) === 'yes';
-                    confirmed && HttpService.delete<{success: boolean, message: string[]}>('userdelete', { id: user.id }).then(res => {
-                      res.response?.message.forEach(m => modalContext.toast!(res.response?.success ? 'success' : 'warning', m));
+                    confirmed && HttpService.delete<void>('userdelete', { id: user.id }).then(res => {
+                      res.messages.forEach(m => modalContext.toast!(res.success ? 'success' : 'warning', m));
                       quickGet<User[]>('userlist').then(res => setUsers(res || []));
                     });
                   }}

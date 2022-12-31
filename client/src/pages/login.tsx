@@ -17,33 +17,19 @@ const Login: React.FC<any> = (props: any) => {
   const navigate = useNavigate();
 
   const submit = () => {
-    HttpService.post<{
-      success: boolean,
-      message: string[],
-      body?: { token: string }
-    }>('login', { email: form.email, password: form.password }).then(res => {
-      
-      if (res.error) {
+    HttpService.post<{ token: string }>('login', { email: form.email, password: form.password }).then(res => {     
+      if (!res.success) {
         console.log(res);
         modalContext.toast?.('error', 'Error occured attempting to login.');
-        modalContext.toast?.('error', res.error.toString());
+        res.messages.forEach(m => modalContext.toast!('warning', m));
       } else {
-        if (res.validationErrors) {
-          modalContext.toast?.('error', 'Error occured attempting to login.');
-          res.validationErrors.forEach(m => modalContext.toast?.('error', m.key + ': ' + m.message));
+        if (res.body?.token) {
+          res.messages.forEach(m => modalContext.toast?.('success', m));
+          AuthService.storeToken(res.body.token);
+          navigate('/home');
         } else {
-          if (res.response) {
-            if (res.response.success === true && res.response.body?.token) {
-              res.response.message.forEach(m => modalContext.toast?.('success', m));
-              AuthService.storeToken(res.response.body.token);
-              navigate('/home');
-            } else {
-              modalContext.toast?.('error', 'Error occured attempting to login.');
-              res.response.message.forEach(m => modalContext.toast?.('error', m));
-            }
-          } else {
-            modalContext.toast?.('error', 'Unknown error occured attempting to login.');
-          }
+          modalContext.toast?.('error', 'Error occured attempting to login.');
+          res.messages.forEach(m => modalContext.toast?.('error', m));
         }
       }
     }).catch(err => {
