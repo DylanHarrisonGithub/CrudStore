@@ -2,7 +2,7 @@ import { RouterResponse } from '../../services/router/router.service';
 
 import file from '../../services/file/file.service';
 
-export default async (request: any): Promise<RouterResponse> => {
+export default async (request: any): Promise<RouterResponse<string[]>> => {
 
   const pList = await file.readDirectory('/public/products');
 
@@ -10,7 +10,9 @@ export default async (request: any): Promise<RouterResponse> => {
     code: 200,
     json: {
       success: true, 
-      message: ["Successfully loaded product image list!"],
+      messages: [
+        "SERVER - ROUTES - PRODUCTIMAGELIST - Successfully loaded product image list!",
+      ],
       body: pList
     }
   }))

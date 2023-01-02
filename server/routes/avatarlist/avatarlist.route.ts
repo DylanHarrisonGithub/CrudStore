@@ -10,7 +10,7 @@ export default async (request: any): Promise<RouterResponse<string[]>> => {
     code: 200,
     json: {
       success: true, 
-      message: ["Successfully loaded avatar list!"],
+      messages: ["SERVER - ROUTES - AVATARLIST - Successfully loaded avatar list!"],
       body: aList
     }
   }))

@@ -11,7 +11,7 @@ export interface RouterResponse<T = any> {
   html?: string,
   json?: {
     success: boolean,
-    message: string[],
+    messages: string[],
     body?: T
   }
 }
@@ -83,10 +83,10 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
                 code: 400,  // bad request
                   json: {
                     success: false,
-                    message: [
-                      `Could not negotiate response type.`,
-                      `Request accepts ${request.accepts}.`,
-                      `Route provides ${route!.contentType}`
+                    messages: [
+                      `SERVER - SERVICES - ROUTER - Could not negotiate response type.`,
+                      `SERVER - SERVICES - ROUTER - Request accepts ${request.accepts}.`,
+                      `SERVER - SERVICES - ROUTER - Route provides ${route!.contentType}`
                     ]
                   }
               })));
@@ -96,7 +96,7 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
               code: 400,  // bad request
               json: {
                 success: false,
-                message: ['Validation failed for route parameters.'].concat(validationErrors.map(err => `key: ${err.key}: ${err.message}`))
+                messages: ['SERVER - SERVICES - ROUTER - Validation failed for route parameters.'].concat(validationErrors.map(err => `key: ${err.key}: ${err.message}`))
               }
             })));
           }
@@ -126,10 +126,10 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
                         code: 400,  // bad request
                           json: {
                             success: false,
-                            message: [
-                              `Could not negotiate response type.`,
-                              `Request accepts ${request.accepts}.`,
-                              `Route provides ${route!.contentType}`
+                            messages: [
+                              `SERVER - SERVICES - ROUTER - Could not negotiate response type.`,
+                              `SERVER - SERVICES - ROUTER - Request accepts ${request.accepts}.`,
+                              `SERVER - SERVICES - ROUTER - Route provides ${route!.contentType}`
                             ]
                           }
                       })));
@@ -139,7 +139,7 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
                     code: 400,  // bad request
                     json: {
                       success: false,
-                      message: ['Validation failed for route parameters.'].concat(validationErrors.map(err => `key: ${err.key}: ${err.message}`))
+                      messages: ['SERVER - SERVICES - ROUTER - Validation failed for route parameters.'].concat(validationErrors.map(err => `key: ${err.key}: ${err.message}`))
                     }
                   })));
                 }
@@ -149,7 +149,7 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
                   code: 403,  // forbidden
                   json: {
                     success: false,
-                    message: ['Provided authentication does not have privelege to access route.']
+                    messages: ['SERVER - SERVICES - ROUTER - Provided authentication does not have privilege to access route.']
                   }
                 })));
               }
@@ -158,7 +158,7 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
                 code: 403, // forbidden
                 json: {
                   success: false,
-                  message: ['Provided authentication was not valid.']
+                  messages: ['SERVER - SERVICES - ROUTER - Provided authentication was not valid.']
                 }
               })));
             }
@@ -167,7 +167,7 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
               code: 401, // unauthorized
               json: {
                 success: false,
-                message: ['Authentication was not provided for protected route.']
+                messages: ['SERVER - SERVICES - ROUTER - Authentication was not provided for protected route.']
               }
             })));
           }
@@ -177,7 +177,10 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
           code: 405,  // method not allowed
           json: {
             success: false,
-            message: ['Method not allowed.', `Provided route, '${request.route}' is ${route!.method} method.`]
+            messages: [
+              'SERVER - SERVICES - ROUTER - Method not allowed.', 
+              `SERVER - SERVICES - ROUTER - Provided route, '${request.route}' is ${route!.method} method.`
+            ]
           }
         })));
       }
@@ -186,7 +189,7 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
         code: 404,  // not found
         json: {
           success: false,
-          message: [`Provided route, '${request.route}' does not exist.`]
+          messages: [`SERVER - SERVICES - ROUTER - Provided route, '${request.route}' does not exist.`]
         }
       })));
     }
@@ -196,7 +199,7 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
       code: 400,  // bad request
       json: {
         success: false,
-        message: ['Route was not provided.']
+        messages: ['SERVER - SERVICES - ROUTER - Route was not provided.']
       }
     })));
   }

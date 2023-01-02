@@ -7,13 +7,13 @@ import db from '../../services/db/db.service';
 
 export default async (request: ParsedRequest<{ id: number }>): Promise<RouterResponse<void>> => {
 
-  var queryResult: { success: boolean, message: string[], query: string } = await db.row.delete('user', { id: request.params.id });
+  var queryResult: { success: boolean, messages: string[] } = await db.row.delete('user', { id: request.params.id });
 
   return new Promise(res => res({
     code: 200,
     json: {
       success: queryResult.success, 
-      message: queryResult.message
+      messages: queryResult.messages
     }
   }))
 }

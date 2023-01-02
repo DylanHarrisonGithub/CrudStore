@@ -10,14 +10,20 @@ export default async (request: ParsedRequest<Product>): Promise<RouterResponse<P
   const { id, ...rest } = request.params;
   const prod = { ...rest }; // why does this work?
 
-  var queryResult: { success: boolean, message: string[], query: string, result?: Product } = await db.row.create<Product>('product', prod);
+  var queryResult = await db.row.create<Product>('product', prod);
 
   return new Promise(res => res({
     code: 200,
     json: {
       success: queryResult.success, 
-      message: queryResult.message,
-      body: queryResult.result
+      messages: [
+        queryResult.success ? 
+          `SERVER - ROUTES - PRODUCTCREATE - Successfully created product ${queryResult.body?.id}.` 
+        : 
+          `SERVER - ROUTES - PRODUCTCREATE - Failed to create product ${request.params.name}.`,
+        ...queryResult.messages
+      ],
+      body: queryResult.body
     }
   }))
 }
