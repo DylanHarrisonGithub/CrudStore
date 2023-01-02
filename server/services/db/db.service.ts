@@ -1,11 +1,17 @@
 import pg from 'pg';
 
+type DBServiceReturnType<T=any> = {
+  success: boolean,
+  messages: string[],
+  body?: T
+}
+
 const quoteString = (val: string | number | boolean): string | number | boolean => (typeof val === 'string') ? "'"+val+"'" : val;
 
 const db = {
 
   row: {
-    create: async <T = void>(table: string, row: { [key: string]: string | number | boolean }): Promise<{ success: boolean, query: string, message: string[], result?: T }> => {
+    create: async <T = void>(table: string, row: { [key: string]: string | number | boolean }): Promise<DBServiceReturnType<T>> => {
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `INSERT INTO "${table}" (${
           Object.keys(row).map((key, index) => index !== Object.keys(row).length -1 ? key + ', ' : key).join("")
@@ -18,16 +24,20 @@ const db = {
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [`Row successfully inserted into table ${table}.`],
-          result: result
+          messages: [
+            `SERVER - DBService - Row - Create - Successfully inserted into table ${table}.`, 
+            `SERVER - DBService - Row - Create - Query: ${query}`
+          ],
+          body: result
         }
       } catch (error) {
         await client.end();
         return {
           success: false,
-          query: query,
-          message: [`Error attempting to insert row into table ${table}.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Row - Create - Error attempting to insert row into table ${table}.`,
+            `SERVER - DBService - Row - Create - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }
     },
@@ -35,12 +45,7 @@ const db = {
     read: async <T = void>(
       table: string, 
       where?: { [key: string]: string | number | boolean }
-    ): Promise<{ 
-      success: boolean, 
-      message: string[], 
-      query: string,
-      result?: T// { [key: string]: string | number | boolean }[] 
-    }> => {
+    ): Promise<DBServiceReturnType<T>> => {
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `SELECT * FROM "${table}"${
         (where && Object.keys(where).length) ? 
@@ -58,16 +63,20 @@ const db = {
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [`Rows successfully selected from table ${table}.`],
-          result: result
+          messages: [
+            `SERVER - DBService - Row - Read - Rows successfully selected from table ${table}.`, 
+            `SERVER - DBService - Row - Read - Query: ${query}`
+          ],
+          body: result
         }
       } catch (error) {
         await client.end();
         return {
           success: false,
-          query: query,
-          message: [`Error attempting to select from table ${table}.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Row - Read - Error attempting to select from table ${table}.`,
+            `SERVER - DBService - Row - Read - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }
     },
@@ -76,12 +85,7 @@ const db = {
       table: string, 
       afterID: number,
       numrows: number
-    ): Promise<{ 
-      success: boolean, 
-      message: string[], 
-      query: string,
-      result?: T// { [key: string]: string | number | boolean }[] 
-    }> => {
+    ): Promise<DBServiceReturnType<T>> => {
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = 
       `SELECT * FROM "${table}" WHERE id > ${afterID} ORDER BY id ASC LIMIT ${numrows};`;
@@ -91,21 +95,29 @@ const db = {
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [`Rows successfully streamed from table ${table}.`],
-          result: result
+          messages: [
+            `SERVER - DBService - Row - Stream - Rows successfully streamed from table ${table}.`, 
+            `SERVER - DBService - Row - Stream - Query: ${query}`
+          ],
+          body: result
         }
       } catch (error) {
         await client.end();
         return {
           success: false,
-          query: query,
-          message: [`Error attempting to stream from table ${table}.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Row - Stream - Error attempting to stream from table ${table}.`,
+            `SERVER - DBService - Row - Stream - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }
     },
 
-    update: async (table: string, columns: { [key: string]: string | number | boolean }, where?: { [key: string]: string | number | boolean }): Promise<{ success: boolean, query: string, message: string[] }> => {
+    update: async <T=void>(
+      table: string, 
+      columns: { [key: string]: string | number | boolean }, 
+      where?: { [key: string]: string | number | boolean }
+    ): Promise<DBServiceReturnType<T>> => {
       
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `UPDATE "${table}" SET ${
@@ -128,31 +140,38 @@ const db = {
       if (!(Object.keys(columns).length)) {
         return {
           success: false,
-          query: query,
-          message: [`No updates were provided for table ${table}.`]
+          messages: [
+            `SERVER - DBService - Row - Update - No updates were provided for table ${table}.`,
+            `SERVER - DBService - Row - Update - Query: ${query}`
+          ]
         }
       }
 
       try {
         await client.connect();
-        await client.query(query);
+        const result = <T>(((await client.query(query)).rows as unknown[])[0]);
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [`Row(s) successfully updated in table ${table}.`]
+          messages: [
+            `SERVER - DBService - Row - Update - Row(s) successfully updated in table ${table}.`, 
+            `SERVER - DBService - Row - Update - Query: ${query}`
+          ],
+          body: result
         }
       } catch (error) {
         await client.end();
         return {
           success: false,
-          query: query,
-          message: [`Error attempting to update row(s) in table ${table}.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Row - Update - Error attempting to update row(s) in table ${table}.`,
+            `SERVER - DBService - Row - Update - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }  
     },
 
-    delete: async (table: string, where?: { [key: string]: string | number | boolean }): Promise<{ success: boolean, query: string, message: string[] }> => {
+    delete: async (table: string, where?: { [key: string]: string | number | boolean }): Promise<DBServiceReturnType<void>> => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `DELETE FROM "${table}"${
@@ -171,20 +190,24 @@ const db = {
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [`Row(s) successfully deleted in table ${table}.`]
+          messages: [
+            `SERVER - DBService - Row - Delete - Row(s) successfully deleted in table ${table}.`, 
+            `SERVER - DBService - Row - Delete - Query: ${query}`
+          ]
         }
       } catch (error) {
         await client.end();
         return {
           success: false,
-          query: query,
-          message: [`Error attempting to delete row(s) in table ${table}.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Row - Delete - Error attempting to delete row(s) in table ${table}.`,
+            `SERVER - DBService - Row - Delete - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }
     },
 
-    query: async <T = void>(query: string): Promise<{ success: boolean, query: string, message: string[], result?: T}> => {
+    query: async <T = void>(query: string): Promise<DBServiceReturnType<T>> => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       try {
@@ -193,15 +216,19 @@ const db = {
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [`Query successfully executed.`],
-          result: result
+          messages: [
+            `SERVER - DBService - Row - Query - Query successfully executed.`,
+            `SERVER - DBService - Row - Query - Query: ${query}`
+          ],
+          body: result
         }
       } catch (error) {
         return {
           success: false,
-          query: query,
-          message: [`Query did not execute successfully.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Row - Query - Query did not execute successfully.`,
+            `SERVER - DBService - Row - Query - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }
     }
@@ -209,7 +236,7 @@ const db = {
 
   table: {
 
-    create: async (table: string, columns: { [key: string]: string }): Promise<{ success: boolean, query: string, message: string[] }> => {
+    create: async <T=void>(table: string, columns: { [key: string]: string }): Promise<DBServiceReturnType<T>> => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `CREATE TABLE IF NOT EXISTS "${table}" (${
@@ -218,30 +245,30 @@ const db = {
 
       try {
         await client.connect();
-        const result = await client.query(query);
+        const result = <T>((await client.query(query)).rows as unknown);
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [`Table ${table} successfully created.`],
+          messages: [
+            `SERVER - DBService - Table - Create - Table ${table} successfully created.`,
+            `SERVER - DBService - Table - Create - Query: ${query}`
+          ],
+          body: result
         }
       } catch (error) {
         await client.end();
         return {
           success: false,
-          query: query,
-          message: [`Error attempting to create table ${table}.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Table - Create - Error attempting to create table ${table}.`,
+            `SERVER - DBService - Table - Create - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }
 
     },
 
-    read: async (table?: string): Promise<{ 
-      success: boolean, 
-      message: string[], 
-      query: string,
-      result?: any// { [key: string]: string | number | boolean }[] 
-    }> => {
+    read: async <T=void>(table?: string): Promise<DBServiceReturnType<T>> => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = table ?
@@ -251,39 +278,42 @@ const db = {
       
       try {
         await client.connect();
-        const result = await client.query(query);
+        const result = <T>((await client.query(query)).rows as unknown);
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [table ? `${table} read successfully.` : `Tables read successfully`],
-          result: result.rows
+          messages: [
+            `SERVER - DBService - Table - Read - ` + (table ? `${table} read successfully.` : `Tables read successfully`),
+            `SERVER - DBService - Table - Read - Query: ${query}`
+          ],
+          body: result
         }
       } catch (error) {
         await client.end();
         return {
           success: false,
-          query: query,
-          message: [table ? `Error attempting to read table ${table}.` : `Error attempting to read tables.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Table - Read - ` + (table ? `Error attempting to read table ${table}.` : `Error attempting to read tables.`),
+            `SERVER - DBService - Table - Read - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }
     },
 
-    update: async (
+    update: async <T=void>(
       table: string,
       updates: {
         add?: { [column: string]: string },
         drop?: string[],
-        redifine?: { [column: string]: string },
+        redefine?: { [column: string]: string },
         rename?: { [column: string]: string }
       }
-    ): Promise<{ success: boolean, query: string, message: string[] }> => {
+    ): Promise<DBServiceReturnType<T>> => {
 
       if (!(Object.keys(updates).length)) {
         return {
           success: true,
-          query: '',
-          message: [`Warning attempting to update table ${table}. No updates were provided`]
+          messages: [`SERVER - DBService - Table - Update - Warning attempting to update table ${table}. No updates were provided.`]
         }
       }
 
@@ -293,31 +323,36 @@ const db = {
       } ${
         updates.drop?.map((column, i) => `\n  ADD DROP COLUMN "${column}"`)
       } ${
-        Object.keys(updates.redifine || {}).map((column, i) => `\n  ALTER COLUMN "${column}" TYPE ${updates.redifine![column]}`)
+        Object.keys(updates.redefine || {}).map((column, i) => `\n  ALTER COLUMN "${column}" TYPE ${updates.redefine![column]}`)
       } ${
-        Object.keys(updates.rename || {}).map((column, i) => `\n  RENAME COLUMN "${column}" TO ${updates.redifine![column]}`)
+        Object.keys(updates.rename || {}).map((column, i) => `\n  RENAME COLUMN "${column}" TO ${updates.redefine![column]}`)
       };`;
 
       try {
         await client.connect();
-        const result = await client.query(query);
+        const result = <T>((await client.query(query)).rows as unknown);
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [`Table ${table} successfully updated.`],
+          messages: [
+            `SERVER - DBService - Table - Update - Table ${table} successfully updated.`,
+            `SERVER - DBService - Table - Update - Query: ${query}`
+          ],
+          body: result
         }
       } catch (error) {
         await client.end();
         return {
           success: false,
-          query: query,
-          message: [`Error attempting to update table ${table}.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Table - Update - Error attempting to update table ${table}.`,
+            `SERVER - DBService - Table - Update - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }
     },
 
-    delete: async (table: string): Promise<{ success: boolean, query: string, message: string[] }> => {
+    delete: async (table: string): Promise<DBServiceReturnType<void>> => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `DROP TABLE "${table}";`;
@@ -328,15 +363,19 @@ const db = {
         await client.end();
         return {
           success: true,
-          query: query,
-          message: [`Table ${table} successfully deleted.`],
+          messages: [
+            `SERVER - DBService - Table - Delete - Table ${table} successfully deleted.`,
+            `SERVER - DBService - Table - Delete - Query: ${query}`
+          ],
         }
       } catch (error) {
         await client.end();
         return {
           success: false,
-          query: query,
-          message: [`Error attempting to delete table ${table}.`].concat(<string[]>(<any>error).stack)
+          messages: [
+            `SERVER - DBService - Table - Delete - Error attempting to delete table ${table}.`,
+            `SERVER - DBService - Table - Delete - Query: ${query}`
+          ].concat(<string[]>(<any>error).stack)
         }
       }
     }

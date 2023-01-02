@@ -3,7 +3,7 @@ import DB from '../../services/db/db.service';
 import authentication from '../../services/authentication/authentication.service';
 import crypto from 'crypto';
 
-export default async (request: any): Promise<RouterResponse> => {
+export default async (request: any): Promise<RouterResponse<{ token: string }>> => {
 
   const {email, password}: {email: string, password: string} = request.params;
 
@@ -17,7 +17,9 @@ export default async (request: any): Promise<RouterResponse> => {
       code: 200, 
       json: { 
         success: true, 
-        message: [`New user ${email} registered.`].concat(res.message),
+        messages: [
+          `SERVER - ROUTES - REGISTER - New user ${email} registered.`
+        ].concat(res.messages),
         body: { token: authentication.generateToken({email: email, privilege: 'user', dummy: ""}) }
       } 
     }));
@@ -26,8 +28,7 @@ export default async (request: any): Promise<RouterResponse> => {
       code: 500, 
       json: { 
         success: false, 
-        message: [`User ${email} could not be registered.`].concat(res.message),
-        body: { res: res } //authentication.generateToken({email: email, privilege: 'user'}) }
+        messages: [`SERVER - ROUTES - REGISTER - User ${email} could not be registered.`].concat(res.messages)
       } 
     }));
   }

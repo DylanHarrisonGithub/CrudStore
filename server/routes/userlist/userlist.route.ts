@@ -9,7 +9,7 @@ export default async (request: ParsedRequest): Promise<RouterResponse<
   { id: number, email: string, avatar: string, privilege: string }[] | void
 >> => {
 
-  var queryResult: { success: boolean, message: string[], query: string, result?: User[] };
+  var queryResult: { success: boolean, messages: string[], body?: User[] };
 
   if (request.params.id) {
     if (request.params.numrows) {
@@ -26,8 +26,8 @@ export default async (request: ParsedRequest): Promise<RouterResponse<
     code: 200,
     json: {
       success: queryResult.success, 
-      message: queryResult.message,
-      body: queryResult.result?.map(({id, email, avatar, privilege}) => ({ id: id, email: email, avatar: avatar, privilege: privilege }))
+      messages: queryResult.messages,
+      body: queryResult.body?.map(({id, email, avatar, privilege}) => ({ id: id, email: email, avatar: avatar, privilege: privilege }))
     }
   }))
 }

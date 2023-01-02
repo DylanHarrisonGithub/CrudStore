@@ -47,7 +47,7 @@ app.listen(process.env.PORT || 3000, async () => {
   console.log(`CrudStore listening on port ${process.env.PORT || 3000}`);
 
   for (const key of Object.keys(server.models)) {
-    console.log((await db.table.create(key, (<any>server.models)[key])).message);
+    console.log((await db.table.create(key, (<any>server.models)[key])).messages);
   }
   // console.log(await db.row.stream('user', 5, 3));
 

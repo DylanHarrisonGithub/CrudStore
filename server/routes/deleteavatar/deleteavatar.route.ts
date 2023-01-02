@@ -6,15 +6,15 @@ import file from '../../services/file/file.service';
 export default async (request: ParsedRequest): Promise<RouterResponse> => {
 
   if (!(request.params.filename)) {
-    return new Promise(res => res({ code: 400, json: { success: false, message: ["filename not provided."]} }));
+    return new Promise(res => res({ code: 400, json: { success: false, messages: ["SERVER - ROUTES - DELETEAVATAR - Filename not provided."]} }));
   }
 
   try {
     const res = await file.delete(`public/avatars/` + request.params.filename);
-    return new Promise(res => res({ code: 200, json: { success: true, message: [`Avatar image ${request.params.filename} successfully deleted.`]} }));
+    return new Promise(res => res({ code: 200, json: { success: true, messages: [`SERVER - ROUTES - DELETEAVATAR - Avatar image ${request.params.filename} successfully deleted.`]} }));
   } catch (err: any) {
-    return new Promise(res => res({ code: 404, json: { success: false, message: [
-      `Avatar image ${request.params.filename} could not be deleted.`,
+    return new Promise(res => res({ code: 404, json: { success: false, messages: [
+      `SERVER - ROUTES - DELETEAVATAR - Avatar image ${request.params.filename} could not be deleted.`,
       err.toString()
     ]} }));
   }

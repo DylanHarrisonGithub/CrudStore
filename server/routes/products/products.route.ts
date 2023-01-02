@@ -12,7 +12,7 @@ export default async (request: ParsedRequest<{
 }>): Promise<RouterResponse<Product[]>> => {
 
 
-  var queryResult: { success: boolean, message: string[], query: string, result?: Product[] };
+  var queryResult: { success: boolean, messages: string[], body?: Product[] };
 
   const { afterID, numRows, search } = request.params;
 
@@ -27,8 +27,14 @@ export default async (request: ParsedRequest<{
     code: 200,
     json: {
       success: queryResult.success, 
-      message: queryResult.message,
-      body: queryResult.result
+      messages: [
+        queryResult.success ? 
+          `SERVER - ROUTES - PRODUCTS - Successfully retrieved products.`
+        :
+        `SERVER - ROUTES - PRODUCTS - Error retrieving products.`,
+        ...queryResult.messages
+      ],
+      body: queryResult.body
     }
   }))
 }

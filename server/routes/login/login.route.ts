@@ -5,7 +5,7 @@ import crypto from 'crypto';
 
 import { User } from '../../models/models';
 
-export default async (request: any): Promise<RouterResponse> => {
+export default async (request: any): Promise<RouterResponse<{ token: string }>> => {
 
   const {email, password}: {email: string, password: string} = request.params;
 
@@ -16,30 +16,32 @@ export default async (request: any): Promise<RouterResponse> => {
       code: 500, 
       json: { 
         success: false, 
-        message: [`Server or Database error attempting to login user ${email}.`].concat(res.message)
+        messages: [
+          `SERVER - ROUTES - LOGIN - Server or Database error attempting to login user ${email}.`
+        ].concat(res.messages)
       } 
     }));
   }
 
-  if (!(res.result && res.result.length)) {
+  if (!(res.body && res.body.length)) {
     return new Promise(resolve => resolve({ 
       code: 500, 
       json: { 
         success: false, 
-        message: [`User ${email} not found.`].concat(res.message)
+        messages: [`SERVER - ROUTES - LOGIN - User ${email} not found.`].concat(res.messages)
       } 
     }));
   }
 
-  const salt = res.result[0].salt;
+  const salt = res.body[0].salt;
   const hash = await crypto.pbkdf2Sync(password, salt, 32, 64, 'sha512').toString('hex');
 
-  if (!(hash === res.result[0].password)) {
+  if (!(hash === res.body[0].password)) {
     return new Promise(resolve => resolve({ 
       code: 500, 
       json: { 
         success: false, 
-        message: [`Password did not match for user ${email}.`].concat(res.message)
+        messages: [`SERVER - ROUTES - LOGIN - Password did not match for user ${email}.`].concat(res.messages)
       } 
     }));
   }
@@ -48,8 +50,8 @@ export default async (request: any): Promise<RouterResponse> => {
     code: 200, 
     json: { 
       success: true, 
-      message: [`User ${email} successfully logged in.`],
-      body: { token: authentication.generateToken({email: email, privilege: res.result![0].privilege}) }
+      messages: [`SERVER - ROUTES - LOGIN - User ${email} successfully logged in.`],
+      body: { token: authentication.generateToken({email: email, privilege: res.body![0].privilege}) }
     } 
   })); 
 

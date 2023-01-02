@@ -9,13 +9,13 @@ export default async (request: ParsedRequest<
   { id: number, update: { email?: string, avatar?: string, privilege?: string } }
 >): Promise<RouterResponse<void>> => {
 
-  var queryResult: { success: boolean, message: string[], query: string } = await db.row.update('user', request.params.update, { id: request.params.id });
+  var queryResult: { success: boolean, messages: string[] } = await db.row.update('user', request.params.update, { id: request.params.id });
 
   return new Promise(res => res({
     code: 200,
     json: {
       success: queryResult.success, 
-      message: queryResult.message
+      messages: queryResult.messages
     }
   }))
 }
