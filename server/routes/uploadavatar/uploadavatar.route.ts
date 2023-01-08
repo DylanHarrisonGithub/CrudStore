@@ -9,11 +9,25 @@ export default (request: ParsedRequest): Promise<RouterResponse<string[]>> => ne
     if (err) {
       res({ code: 200, json: { success: false, messages: ["SERVER - ROUTES - UPLOADAVATAR - Failed to upload file."].concat(err.toString())} }); 
     } else {
-      res({ code: 200, json: { 
-        success: true, 
-        messages: ["SERVER - ROUTES - UPLOADAVATAR - Avatar successfully uploaded!"],
-        body: await file.readDirectory('public/avatars')
-      }}); 
+
+      file.readDirectory(`public/avatars`).then(sr => {
+        res({
+          code: 200,
+          json: {
+            success: sr.success,
+            messages: [
+              sr.success ?
+                "SERVER - ROUTES - AVATARLIST - Successfully loaded avatar list!"
+              :
+                `Server - Routes - AVATARLIST - Failed to load avatar list.`,
+              ...sr.messages,
+              "SERVER - ROUTES - UPLOADAVATAR - Avatar successfully uploaded!"
+            ],
+            body: sr.body
+          }
+        })
+      });
+
     }
   });
   

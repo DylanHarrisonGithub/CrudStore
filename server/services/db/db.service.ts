@@ -1,17 +1,12 @@
 import pg from 'pg';
 
-type DBServiceReturnType<T=any> = {
-  success: boolean,
-  messages: string[],
-  body?: T
-}
+import { Service, ServicePromise } from '../services';
 
 const quoteString = (val: string | number | boolean): string | number | boolean => (typeof val === 'string') ? "'"+val+"'" : val;
 
 const db = {
-
   row: {
-    create: async <T = void>(table: string, row: { [key: string]: string | number | boolean }): Promise<DBServiceReturnType<T>> => {
+    create: async <T = void>(table: string, row: { [key: string]: string | number | boolean }): ServicePromise<T> => {
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `INSERT INTO "${table}" (${
           Object.keys(row).map((key, index) => index !== Object.keys(row).length -1 ? key + ', ' : key).join("")
@@ -45,7 +40,7 @@ const db = {
     read: async <T = void>(
       table: string, 
       where?: { [key: string]: string | number | boolean }
-    ): Promise<DBServiceReturnType<T>> => {
+    ): ServicePromise<T> => {
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `SELECT * FROM "${table}"${
         (where && Object.keys(where).length) ? 
@@ -85,7 +80,7 @@ const db = {
       table: string, 
       afterID: number,
       numrows: number
-    ): Promise<DBServiceReturnType<T>> => {
+    ): ServicePromise<T> => {
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = 
       `SELECT * FROM "${table}" WHERE id > ${afterID} ORDER BY id ASC LIMIT ${numrows};`;
@@ -117,7 +112,7 @@ const db = {
       table: string, 
       columns: { [key: string]: string | number | boolean }, 
       where?: { [key: string]: string | number | boolean }
-    ): Promise<DBServiceReturnType<T>> => {
+    ): ServicePromise<T> => {
       
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `UPDATE "${table}" SET ${
@@ -171,7 +166,7 @@ const db = {
       }  
     },
 
-    delete: async (table: string, where?: { [key: string]: string | number | boolean }): Promise<DBServiceReturnType<void>> => {
+    delete: async (table: string, where?: { [key: string]: string | number | boolean }): ServicePromise => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `DELETE FROM "${table}"${
@@ -207,7 +202,7 @@ const db = {
       }
     },
 
-    query: async <T = void>(query: string): Promise<DBServiceReturnType<T>> => {
+    query: async <T = void>(query: string): ServicePromise<T> => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       try {
@@ -236,7 +231,7 @@ const db = {
 
   table: {
 
-    create: async <T=void>(table: string, columns: { [key: string]: string }): Promise<DBServiceReturnType<T>> => {
+    create: async <T=void>(table: string, columns: { [key: string]: string }): ServicePromise<T> => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `CREATE TABLE IF NOT EXISTS "${table}" (${
@@ -268,7 +263,7 @@ const db = {
 
     },
 
-    read: async <T=void>(table?: string): Promise<DBServiceReturnType<T>> => {
+    read: async <T=void>(table?: string): ServicePromise<T> => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = table ?
@@ -308,7 +303,7 @@ const db = {
         redefine?: { [column: string]: string },
         rename?: { [column: string]: string }
       }
-    ): Promise<DBServiceReturnType<T>> => {
+    ): ServicePromise<T> => {
 
       if (!(Object.keys(updates).length)) {
         return {
@@ -352,7 +347,7 @@ const db = {
       }
     },
 
-    delete: async (table: string): Promise<DBServiceReturnType<void>> => {
+    delete: async (table: string): ServicePromise => {
 
       const client = new pg.Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
       const query = `DROP TABLE "${table}";`;

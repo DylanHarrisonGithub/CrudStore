@@ -1,54 +1,180 @@
-import fs = require('fs');
+import { promises as fs } from 'fs'
 
-import server from '../../server';
+import { Service, ServicePromise } from '../services';
+
+import config from '../../config/config';
+
+const parseErrorMessage = (fnName: string, e: any): string[] => [
+  `Server - Services - File - ${fnName}: ${e.toString() || `Error: ${e.name || ``} ${e.message || `Unknown error.`}`}`
+];
 
 const file = {
-  exists: (filepath: string) => new Promise<boolean>(r=>fs.access(server.config.ROOT_DIR + filepath, fs.constants.F_OK, (e:any) => r(!e))),
-  create:  (filepath: string, content: string) => new Promise<string>((res, rej) => {
-    fs.writeFile(server.config.ROOT_DIR + filepath, content, (err: any) => {
-      if (err) { rej(err); } else { res('File created.'); }
-    });
-  }),
-  read:  (filepath: string) => new Promise<string>((res,rej) => {
-    fs.readFile(server.config.ROOT_DIR + filepath, "utf8", (err: any, file: string) => {
-      if (err) { rej(err); } else  {res(file); }
-    });
-  }),
-  update:  (filepath: string, content: string) => new Promise<string>((res, rej) => {
-    fs.appendFile(server.config.ROOT_DIR + filepath, content, (err: any) => {
-      if (err) { rej(err); } else { res('File updated.'); }
-    });
-  }),
-  delete:  (filepath: string) => new Promise<string>((res, rej) => {
-    fs.unlink(server.config.ROOT_DIR + filepath, (err: any) => {
-      if (err) { rej(err); } else { res('File deleted.'); }
-    });
-  }),
-  move:  (srcpath: string, destpath: string) => new Promise<string>((res, rej) => {
-    fs.rename(server.config.ROOT_DIR + srcpath, server.config.ROOT_DIR +  destpath, (err: any) => {
-      if (err) { rej(err); } else { res('File moved successfully.'); }
-    });
-  }),
-  readDirectory: (path: string): Promise<string[]> => {
-    return new Promise((res, rej) => {
-      fs.readdir(server.config.ROOT_DIR + path, (err: NodeJS.ErrnoException | null, files: string[]) => {
-        if (err) { rej(err); } else { res(files); }
-      });
-    });
+  
+  exists: async (filepath: string): ServicePromise => {
+    try {
+      await fs.access(config.ROOT_DIR + filepath, fs.constants.F_OK);
+      return {
+        success: true,
+        messages: [
+          `Server - Services - File - Exists: Successfully ${filepath} verified to exist.`,
+        ]
+      }
+    } catch (e) {
+      return {
+        success: false,
+        messages: [
+          `Server - Services - File - Exists: Error looking for ${filepath}`,
+          ...parseErrorMessage(`Exist`, e)
+        ]
+      }      
+    }
   },
-  createDirectory: (path: string): Promise<string> => {
-    return new Promise((res, rej) => {
-      fs.mkdir(server.config.ROOT_DIR + path, { recursive: true }, err => {
-        if (err) { rej(err); } else { res('Directory created successfully.'); }
-      });
-    });
+  
+  create: async (filepath: string, content: string): ServicePromise => {
+    try {
+      await fs.writeFile(config.ROOT_DIR + filepath, content);
+      return {
+        success: true,
+        messages: [`Server - Services - File - Create: Successfully created ${filepath}`,]
+      }
+    } catch(e) {
+      return {
+        success: false,
+        messages: [
+          `Server - Services - File - Create: Error creating ${filepath}`,
+          ...parseErrorMessage(`Create`, e)
+        ]
+      }
+    }
   },
-  deleteDirectory: (path: string): Promise<string> => {
-    return new Promise((res, rej) => {
-      fs.rmdir(server.config.ROOT_DIR + path, { recursive: true }, err => {
-        if (err) { rej(err); } else { res('Directory deleted successfully.'); }
-      });
-    });
+  
+  read: async (filepath: string): ServicePromise<string> => {
+    try {
+      const contents = await fs.readFile(config.ROOT_DIR + filepath, "utf8");
+      return {
+        success: true,
+        messages: [`Server - Services - File - Read: Successfully read ${filepath}`,],
+        body: contents
+      }
+    } catch(e) {
+      return {
+        success: false,
+        messages: [
+          `Server - Services - File - Read: Error reading ${filepath}`,
+          ...parseErrorMessage(`Read`, e)
+        ]
+      }
+    }
+  },
+
+  update: async (filepath: string, content: string): ServicePromise => {
+    try {
+      await fs.appendFile(config.ROOT_DIR + filepath, content);
+      return {
+        success: true,
+        messages: [`Server - Services - File - Update: Successfully updated ${filepath}.`,]
+      }
+    } catch(e) {
+      return {
+        success: false,
+        messages: [
+          `Server - Services - File - Update: Error updating ${filepath}`,
+          ...parseErrorMessage(`Update`, e)
+        ]
+      }
+    }
+  },
+
+  delete: async (filepath: string): ServicePromise => {
+    try {
+      await fs.unlink(config.ROOT_DIR + filepath);
+      return {
+        success: true,
+        messages: [`Server - Services - File - Delete: Successfully deleted ${filepath}.`,]
+      }
+    } catch(e) {
+      return {
+        success: false,
+        messages: [
+          `Server - Services - File - Delete: Error deleting ${filepath}.`,
+          ...parseErrorMessage(`Delete`, e)
+        ]
+      }
+    }
+  },
+
+  move: async (srcpath: string, destpath: string): ServicePromise => {
+    try {
+      await fs.rename(config.ROOT_DIR + srcpath, config.ROOT_DIR +  destpath);
+      return {
+        success: true,
+        messages: [`Server - Services - File - Move: Successfully moved ${srcpath} to ${destpath}.`,]
+      }
+    } catch(e) {
+      return {
+        success: false,
+        messages: [
+          `Server - Services - File - Move: Error moving ${srcpath} to ${destpath}.`,
+          ...parseErrorMessage(`Move`, e)
+        ]
+      }
+    }
+  },
+
+  readDirectory: async (path: string): ServicePromise<string[]> => {
+    try {
+      const files = await fs.readdir(config.ROOT_DIR + path);
+      return {
+        success: true,
+        messages: [`Server - Services - File - ReadDirectory: Successfully read directory ${path}.`,],
+        body: files
+      }
+    } catch(e) {
+      return {
+        success: false,
+        messages: [
+          `Server - Services - File - ReadDirectory: Error reading directory ${path}.`,
+          ...parseErrorMessage(`ReadDirectory`, e)
+        ]
+      }
+    }
+  },
+
+  createDirectory: async (path: string): ServicePromise => {
+    try {
+      await fs.mkdir(config.ROOT_DIR + path, { recursive: true });
+      return {
+        success: true,
+        messages: [`Server - Services - File - CreateDirectory: Successfully created directory ${path}.`,]
+      }
+    } catch(e) {
+      return {
+        success: false,
+        messages: [
+          `Server - Services - File - CreateDirectory: Error creating directory ${path}.`,
+          ...parseErrorMessage(`CreateDirectory`, e)
+        ]
+      }
+    }
+  },
+
+  deleteDirectory: async (path: string): ServicePromise => {
+    try {
+      await fs.rmdir(config.ROOT_DIR + path, { recursive: true });
+      return {
+        success: true,
+        messages: [`Server - Services - File - DeleteDirectory: Successfully deleted directory ${path}.`,]
+      }
+    } catch(e) {
+      return {
+        success: false,
+        messages: [
+          `Server - Services - File - DeleteDirectory: Error deleting directory ${path}.`,
+          ...parseErrorMessage(`DeleteDirectory`, e)
+        ]
+      }
+    }
   }
+
 }
 export default file;
