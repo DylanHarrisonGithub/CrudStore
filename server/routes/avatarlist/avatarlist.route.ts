@@ -9,9 +9,15 @@ export default async (request: any): Promise<RouterResponse<string[]>> => {
   return new Promise(res => res({
     code: 200,
     json: {
-      success: true, 
-      messages: ["SERVER - ROUTES - AVATARLIST - Successfully loaded avatar list!"],
-      body: aList
+      success: aList.success, 
+      messages: [
+        aList.success ?
+          "SERVER - ROUTES - AVATARLIST - Successfully loaded avatar list!"
+        :
+          `Server - Routes - AVATARLIST - Failed to load avatar list.`,
+        ...aList.messages
+      ],
+      body: aList.body
     }
   }))
 }

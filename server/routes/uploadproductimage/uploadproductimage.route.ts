@@ -9,11 +9,24 @@ export default (request: ParsedRequest): Promise<RouterResponse<string[]>> => ne
     if (err) {
       res({ code: 200, json: { success: false, messages: ["SERVER - ROUTES - UPLOADPRODUCTIMAGE - Failed to upload file."]} }); 
     } else {
-      res({ code: 200, json: { 
-        success: true, 
-        messages: ["SERVER - ROUTES - UPLOADPRODUCTIMAGE - Product image successfully uploaded!"],
-        body: await file.readDirectory('public/products')
-      }}); 
+
+      file.readDirectory('public/products').then(sr => {
+        res({
+          code: 200,
+          json: {
+            success: sr.success,
+            messages: [
+              sr.success ?
+                "SERVER - ROUTES - UPLOADPRODUCTIMAGE - Successfully loaded product image list!"
+              :
+                `Server - Routes - UPLOADPRODUCTIMAGE - Failed to load product image list.`,
+              ...sr.messages,
+              "SERVER - ROUTES - UPLOADPRODUCTIMAGE - Product image successfully uploaded!"
+            ],
+            body: sr.body
+          }
+        })
+      });
     }
   });
   

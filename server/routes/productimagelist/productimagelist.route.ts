@@ -9,11 +9,15 @@ export default async (request: any): Promise<RouterResponse<string[]>> => {
   return new Promise(res => res({
     code: 200,
     json: {
-      success: true, 
+      success: pList.success, 
       messages: [
-        "SERVER - ROUTES - PRODUCTIMAGELIST - Successfully loaded product image list!",
+        pList.success ?
+          "SERVER - ROUTES - PRODUCTIMAGELIST - Successfully loaded product image list!"
+        :
+          `Server - Routes - PRODUCTIMAGELIST - Failed to load product image list.`,
+        ...pList.messages
       ],
-      body: pList
+      body: pList.body
     }
   }))
 }
