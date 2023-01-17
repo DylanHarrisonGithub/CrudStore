@@ -30,7 +30,7 @@ import { RouterResponse } from "../services/router/router.service";
 export interface Route {
   method: string[],
   contentType: string,
-  privelege: string[],
+  privilege: string[],
   schema: any,
   route: (request: ParsedRequest) => Promise<RouterResponse>
 }
@@ -39,91 +39,91 @@ const routes: { [key: string]: Route } = {
  products: {
     method: ['GET'],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: productsSchema,
     route: productsRoute 
   },
  productcreate: {
     method: ['POST'],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: productcreateSchema,
     route: productcreateRoute 
   },
  userdelete: {
     method: ['DELETE'],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: userdeleteSchema,
     route: userdeleteRoute 
   },
  userupdate: {
     method: ['PATCH'],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: userupdateSchema,
     route: userupdateRoute 
   },
  userlist: {
     method: ['GET'],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: userlistSchema,
     route: userlistRoute 
   },
  uploadproductimage: {
     method: ["POST"],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: uploadproductimageSchema,
     route: uploadproductimageRoute 
   },
  deleteproductimage: {
     method: ["DELETE"],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: deleteproductimageSchema,
     route: deleteproductimageRoute 
   },
  productimagelist: {
     method: ["GET"],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: productimagelistSchema,
     route: productimagelistRoute 
   },
  deleteavatar: {
     method: ["DELETE"],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: deleteavatarSchema,
     route: deleteavatarRoute 
   },
  uploadavatar: {
     method: ["POST"],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: uploadavatarSchema,
     route: uploadavatarRoute 
   },
  avatarlist: {
     method: ['GET'],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: avatarlistSchema,
     route: avatarlistRoute 
   },
  login: {
     method: ["POST"],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: loginSchema,
     route: loginRoute 
   },
  register: {
     method: ["POST"],
     contentType: "application/json",
-    privelege: ['guest'],
+    privilege: ['guest'],
     schema: registerSchema,
     route: registerRoute 
   },

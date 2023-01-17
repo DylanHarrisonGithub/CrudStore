@@ -63,7 +63,7 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
     let route: Route | undefined = server.routes[request.route];
     if (route) {
       if (route.method.indexOf(request.method) > -1) {
-        if (route.privelege.indexOf('guest') > -1) {
+        if (route.privilege.indexOf('guest') > -1) {
   
           let validationErrors = server.services.validation(
             request.params,
@@ -103,9 +103,10 @@ const router = async (request: ParsedRequest): Promise<RouterResponse> => {
   
         } else {
           if (request.token) {
-            let token = server.services.authentication.decodeToken(request.token);
-            if (token) {
-              if (token.hasOwnProperty('privelege') && route.privelege.indexOf(token.privelege) > -1) {
+            let tokenRes = await server.services.authentication.decodeToken(request.token); // should check for success
+            if (tokenRes.success) {
+              let token = tokenRes.body!;
+              if (token.hasOwnProperty('privilege') && route.privilege.indexOf(token.privilege) > -1) {
   
                 let validationErrors = server.services.validation(
                   request.params,
