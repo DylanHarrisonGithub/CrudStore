@@ -1,6 +1,8 @@
 import express from 'express';
 import url = require('url');
 
+import { Service, ServicePromise } from '../services';
+
 export type ParsedRequest<T = any> = {
   ip: string,
   timestamp: number,

@@ -9,19 +9,22 @@ export type ServicePromise<T=any> = Promise<{
   success: boolean, messages: string[], body?: T
 }>;
 
-export type Service = (<T=any>(...args: any[]) => ServicePromise<T>) | {
-  [key: string]: Service
-};
+export type Service = (
+  (<T=any>(...args: any[]) => ServicePromise<T | any>) | 
+  { [key: string]: Service }
+);
 
-const services = {
-  db: db,
-  file: file,
-  authentication: authentication,
-  requestParser: requestParser,
-  router: router,
-  validation: validation
-};
+// syntactic hack to mandate that services conform to Service type
+const services =  (() => { //((): typeof service extends Service ? typeof service : never => {
+  const service = {
+    db: db,
+    file: file,
+    authentication: authentication,
+    requestParser: requestParser,
+    router: router,
+    validation: validation
+  }
+  return service;
+})();
 
 export default services;
-
-

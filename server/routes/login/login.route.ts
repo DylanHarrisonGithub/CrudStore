@@ -46,12 +46,24 @@ export default async (request: any): Promise<RouterResponse<{ token: string }>> 
     }));
   }
 
-  return new Promise(resolve => resolve({ 
+  const token = await authentication.generateToken({email: email, privilege: res.body![0].privilege});
+
+  if (!token.success) {
+    return new Promise(resolve => resolve({ 
+      code: 500, 
+      json: { 
+        success: false, 
+        messages: [`SERVER - ROUTES - LOGIN - Failed to generate token for user ${email}.`].concat(res.messages).concat(token.messages)
+      } 
+    }));
+  }
+
+  return new Promise(resolve => resolve({
     code: 200, 
     json: { 
       success: true, 
-      messages: [`SERVER - ROUTES - LOGIN - User ${email} successfully logged in.`],
-      body: { token: authentication.generateToken({email: email, privilege: res.body![0].privilege}) }
+      messages: [`SERVER - ROUTES - LOGIN - User ${email} successfully logged in.`].concat(res.messages).concat(token.messages),
+      body: { token: token.body! }
     } 
   })); 
 
