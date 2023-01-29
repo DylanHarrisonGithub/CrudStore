@@ -15,14 +15,14 @@ export type Service = (
 );
 
 // syntactic hack to mandate that services conform to Service type
-const services =  (() => { //((): typeof service extends Service ? typeof service : never => {
+const services = ((): typeof service extends Service ? typeof service : never => {
   const service = {
     db: db,
     file: file,
     authentication: authentication,
     requestParser: requestParser,
+    validation: validation,
     router: router,
-    validation: validation
   }
   return service;
 })();

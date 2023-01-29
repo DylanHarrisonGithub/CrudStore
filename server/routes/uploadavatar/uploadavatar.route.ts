@@ -3,7 +3,7 @@ import { ParsedRequest } from '../../services/requestParser/requestParser.servic
 
 import file from '../../services/file/file.service';
 
-export default (request: ParsedRequest): Promise<RouterResponse<string[]>> => new Promise(res => {
+export default (request: ParsedRequest): Promise<RouterResponse> => new Promise(res => {
 
   request.files[Object.keys(request.files)[0]].mv('public/avatars/' + Object.keys(request.files)[0], async (err: any) => {
     if (err) {

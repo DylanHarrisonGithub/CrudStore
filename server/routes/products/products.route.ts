@@ -9,7 +9,7 @@ export default async (request: ParsedRequest<{
   afterID?: number,
   numRows?: number,
   search?: string
-}>): Promise<RouterResponse<Product[]>> => {
+}>): Promise<RouterResponse> => {
 
 
   var queryResult: { success: boolean, messages: string[], body?: Product[] };

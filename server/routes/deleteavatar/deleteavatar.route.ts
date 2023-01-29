@@ -6,7 +6,13 @@ import file from '../../services/file/file.service';
 export default async (request: ParsedRequest): Promise<RouterResponse> => {
 
   if (!(request.params.filename)) {
-    return new Promise(res => res({ code: 400, json: { success: false, messages: ["SERVER - ROUTES - DELETEAVATAR - Filename not provided."]} }));
+    return new Promise(res => res({ 
+      code: 400, 
+      json: {
+        success: false, 
+        messages: ["SERVER - ROUTES - DELETEAVATAR - Filename not provided."],
+      } 
+    }));
   }
 
   try {

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { json } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
@@ -21,24 +21,43 @@ app.use(fileUpload());
 app.use(express.urlencoded({extended: true}));
 app.use('/api', async (request: express.Request, response: express.Response) => {
   
-  //console.log(request.query);
+  let parsedRequest = await server.services.requestParser(request);
 
-  let res: RouterResponse = await server.services.router(server.services.requestParser(request));
+  if (parsedRequest.success && parsedRequest.body) {
 
-  //console.log(res);
+    let routerResponse = await server.services.router(parsedRequest.body!);
+    let res = routerResponse.body!;
   
-  Object.keys(res.headers || {}).forEach(key => response.setHeader(key, res.headers![key]));
-  if (res.json) {
-    response.status(res.code).json(res.json);
-  } else if (res.html) {
-    response.status(res.code).send(res.html);
-  } else if (res.filename) {
-    response.status(res.code).sendFile(res.filename);
-  } else if (res.redirect) {
-    response.redirect(res.redirect);
+    Object.keys(res.headers || {}).forEach(key => response.setHeader(key, res.headers![key]));
+
+    console.log([
+      ...(res.json?.messages || []),
+      ...routerResponse.messages,
+      ...parsedRequest.messages,
+    ]);
+    
+    if (res.json) {
+
+      //res.json.messages = [...res.json.messages, ... parsedRequest.messages];
+      response.status(res.code).json(res.json);
+    } else if (res.html) {
+      response.status(res.code).send(res.html);
+    } else if (res.filename) {
+      response.status(res.code).sendFile(res.filename);
+    } else if (res.redirect) {
+      response.redirect(res.redirect);
+    } else {
+      response.sendStatus(res.code);
+    }
+
   } else {
-    response.sendStatus(res.code);
+    console.log(parsedRequest.messages);
+    response.status(400).json({
+      success: false,
+      messages: [...parsedRequest.messages]
+    });
   }
+
 });
 app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'client')));

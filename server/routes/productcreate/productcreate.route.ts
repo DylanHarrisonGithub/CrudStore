@@ -5,7 +5,7 @@ import { Product } from '../../models/models';
 
 import db from '../../services/db/db.service';
 
-export default async (request: ParsedRequest<Product>): Promise<RouterResponse<Product | undefined>> => {
+export default async (request: ParsedRequest<Product>): Promise<RouterResponse> => {
 
   const { id, ...rest } = request.params;
   const prod = { ...rest }; // why does this work?
