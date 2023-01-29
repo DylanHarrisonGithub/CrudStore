@@ -5,7 +5,7 @@ import crypto from 'crypto';
 
 import { User } from '../../models/models';
 
-export default async (request: any): Promise<RouterResponse<{ token: string }>> => {
+export default async (request: any): Promise<RouterResponse> => {
 
   const {email, password}: {email: string, password: string} = request.params;
 

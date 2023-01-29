@@ -1,3 +1,5 @@
+import { Service, ServicePromise } from "../services";
+
 export type ValidationErrors = { key: string, message: string }[];
 
 export type ValidationSchema = { [key: string]: {
@@ -29,130 +31,147 @@ const regex = {
   password: /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[-+_!@#$%^&*.,?])/
 };
 
-const validation = (input: any, schema: any): ValidationErrors => {
-  let _validateLeafNode = (key: any, input: any, schema: any): ValidationErrors => {
-    
-    let errors: Array<{key: string, message: string}> = [];
-    if (schema.hasOwnProperty('minLength')) {
-      if ((<string>input).length < schema['minLength']!) {
-        errors.push({ key: key, message: key + ' must be at least ' + schema['minLength'] + ' characters long.'});
-      }
-    }
-    if (schema.hasOwnProperty('maxLength')) {
-      if ((<string>input).length > schema['maxLength']!) {
-        errors.push({ key: key, message: key + ' cannot exceed ' + schema['maxLength'] + ' characters.'});
-      }
-    }
-    if (schema.hasOwnProperty('isAlpha') && schema['isAlpha']) {
-      if (!regex.alpha.test(input)) {
-        errors.push({ key: key, message: key + ' can only contain letters.' });
-      }
-    }
-    if (schema.hasOwnProperty('isAlphaNumeric') && schema['isAlphaNumeric']) {
-      if (!regex.alphaNumeric.test(input)) {
-        errors.push({ key: key, message: key + ' can only contain letters and numbers.' });
-      }
-    }
-    if (schema.hasOwnProperty('isAlphaNumericSpaces') && schema['isAlphaNumericSpaces']) {
-      if (!regex.alphaNumericSpaces.test(input)) {
-        errors.push({ key: key, message: key + ' can only contain letters, numbers and spaces.' });
-      }
-    }
-    if (schema.hasOwnProperty('isCommonWriting') && schema['isCommonWriting']) {
-      if (!regex.commonWriting.test(input)) {
-        errors.push({ key: key, message: key + ' can only contain letters, numbers, spaces and punctuation.' });
-      }
-    }
-    if (schema.hasOwnProperty('isEmail') && schema['isEmail']) {
-      if (!regex.email.test(input)) {
-        errors.push({ key: key, message: key + ' must be a valid email.' });
-      }
-    }
-    if (schema.hasOwnProperty('isPassword') && schema['isPassword']) {
-      if (!regex.password.test(input)) {
-        errors.push({ key: key, message: key + ' must contain at least one lowercase and uppercase letter, number, and special character.' });
-      }
-    }
-    if (schema.hasOwnProperty('regex')) {
-      if (!(<RegExp>schema['regex']).test(input)) {
-        errors.push({ key: key, message: key + ' does not match format.' });
-      }
-    }
-    if (schema.hasOwnProperty('min')) {
-      if (input < schema['min']!) {
-        errors.push({ key: key, message: key + ' must be at least ' + schema['min'] + '.'});
-      }
-    }
-    if (schema.hasOwnProperty('max')) {
-      if (input > schema['max']!) {
-        errors.push({ key: key, message: key + ' cannot exceed ' + schema['max'] + '.'});
-      }
-    }
-    return errors;
-  }
 
-  let _validate = (input: any, schema: any, validate: any, validateLeafNode: any): ValidationErrors => {
-    let errors: Array<{key: string, message: string}> = [];
-    for (let key in schema) {
 
-      if (input.hasOwnProperty(key) && !(input[key] === undefined || input[key] === null)) {
+const validation = ((): typeof service extends Service ? typeof service : never => {
 
-        if (typeof schema[key]['type'] === 'object') {
-
-          if (Array.isArray(input[key])) {
-            for (let item of input[key]) {
-              errors = errors.concat(validate(item, schema[key]['type'], validate, validateLeafNode));
-            }
-          } else {
-            errors = errors.concat(validate(input[key], schema[key]['type'], validate, validateLeafNode));
-          }
-
-        } else {
-
-          if (schema[key]['type'] === (typeof input[key])) {
-
-            if (['number', 'string', 'boolean'].indexOf(typeof input[key]) > -1) {
-              errors = errors.concat(validateLeafNode(key, input[key], schema[key]));
-            } else {
-              errors.push({
-                key: key,
-                message: key + ' is not of a supported type'
-              });
-            }
-
-          } else {
-
+  const service = (input: any, schema: any): ServicePromise<ValidationErrors> => {
+    let _validateLeafNode = (key: any, input: any, schema: any): ValidationErrors => {
+      
+      let errors: Array<{key: string, message: string}> = [];
+      if (schema.hasOwnProperty('minLength')) {
+        if ((<string>input).length < schema['minLength']!) {
+          errors.push({ key: key, message: key + ' must be at least ' + schema['minLength'] + ' characters long.'});
+        }
+      }
+      if (schema.hasOwnProperty('maxLength')) {
+        if ((<string>input).length > schema['maxLength']!) {
+          errors.push({ key: key, message: key + ' cannot exceed ' + schema['maxLength'] + ' characters.'});
+        }
+      }
+      if (schema.hasOwnProperty('isAlpha') && schema['isAlpha']) {
+        if (!regex.alpha.test(input)) {
+          errors.push({ key: key, message: key + ' can only contain letters.' });
+        }
+      }
+      if (schema.hasOwnProperty('isAlphaNumeric') && schema['isAlphaNumeric']) {
+        if (!regex.alphaNumeric.test(input)) {
+          errors.push({ key: key, message: key + ' can only contain letters and numbers.' });
+        }
+      }
+      if (schema.hasOwnProperty('isAlphaNumericSpaces') && schema['isAlphaNumericSpaces']) {
+        if (!regex.alphaNumericSpaces.test(input)) {
+          errors.push({ key: key, message: key + ' can only contain letters, numbers and spaces.' });
+        }
+      }
+      if (schema.hasOwnProperty('isCommonWriting') && schema['isCommonWriting']) {
+        if (!regex.commonWriting.test(input)) {
+          errors.push({ key: key, message: key + ' can only contain letters, numbers, spaces and punctuation.' });
+        }
+      }
+      if (schema.hasOwnProperty('isEmail') && schema['isEmail']) {
+        if (!regex.email.test(input)) {
+          errors.push({ key: key, message: key + ' must be a valid email.' });
+        }
+      }
+      if (schema.hasOwnProperty('isPassword') && schema['isPassword']) {
+        if (!regex.password.test(input)) {
+          errors.push({ key: key, message: key + ' must contain at least one lowercase and uppercase letter, number, and special character.' });
+        }
+      }
+      if (schema.hasOwnProperty('regex')) {
+        if (!(<RegExp>schema['regex']).test(input)) {
+          errors.push({ key: key, message: key + ' does not match format.' });
+        }
+      }
+      if (schema.hasOwnProperty('min')) {
+        if (input < schema['min']!) {
+          errors.push({ key: key, message: key + ' must be at least ' + schema['min'] + '.'});
+        }
+      }
+      if (schema.hasOwnProperty('max')) {
+        if (input > schema['max']!) {
+          errors.push({ key: key, message: key + ' cannot exceed ' + schema['max'] + '.'});
+        }
+      }
+      return errors;
+    }
+  
+    let _validate = (input: any, schema: any, validate: any, validateLeafNode: any): ValidationErrors => {
+      let errors: Array<{key: string, message: string}> = [];
+      for (let key in schema) {
+  
+        if (input.hasOwnProperty(key) && !(input[key] === undefined || input[key] === null)) {
+  
+          if (typeof schema[key]['type'] === 'object') {
+  
             if (Array.isArray(input[key])) {
-
               for (let item of input[key]) {
-                errors = errors.concat(validateLeafNode(key, item, schema[key]));
+                errors = errors.concat(validate(item, schema[key]['type'], validate, validateLeafNode));
               }
-
             } else {
-              errors.push({
-                key: key,
-                message: key + ' does not match specified type.'
-              });
+              errors = errors.concat(validate(input[key], schema[key]['type'], validate, validateLeafNode));
             }
-
+  
+          } else {
+  
+            if (schema[key]['type'] === (typeof input[key])) {
+  
+              if (['number', 'string', 'boolean'].indexOf(typeof input[key]) > -1) {
+                errors = errors.concat(validateLeafNode(key, input[key], schema[key]));
+              } else {
+                errors.push({
+                  key: key,
+                  message: key + ' is not of a supported type'
+                });
+              }
+  
+            } else {
+  
+              if (Array.isArray(input[key])) {
+  
+                for (let item of input[key]) {
+                  errors = errors.concat(validateLeafNode(key, item, schema[key]));
+                }
+  
+              } else {
+                errors.push({
+                  key: key,
+                  message: key + ' does not match specified type.'
+                });
+              }
+  
+            }
+          }
+  
+        } else {
+          if (schema[key].hasOwnProperty('required') && schema[key]['required']) {
+            errors.push({
+              key: key,
+              message: key + ' is required.'
+            });
           }
         }
-
-      } else {
-        if (schema[key].hasOwnProperty('required') && schema[key]['required']) {
-          errors.push({
-            key: key,
-            message: key + ' is required.'
-          });
-        }
       }
+  
+      return errors;
     }
-
-    return errors;
+  
+    const errs = _validate(input, schema, _validate, _validateLeafNode);
+    return new Promise((resolve => resolve({
+      success: !(errs.length),
+      messages: [
+        errs.length ?
+          `Server - Services - Validation - Validation failed for input.`
+        :
+          `Server - Services - Validation - Input successfully validated.`
+      ],
+      body: errs
+    })));
   }
 
-  return _validate(input, schema, _validate, _validateLeafNode);
-}
+  return service;
+})();
 
 export default validation;
   

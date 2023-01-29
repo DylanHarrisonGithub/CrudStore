@@ -5,7 +5,7 @@ import { User } from '../../models/models';
 
 import db from '../../services/db/db.service';
 
-export default async (request: ParsedRequest<{ id: number }>): Promise<RouterResponse<void>> => {
+export default async (request: ParsedRequest<{ id: number }>): Promise<RouterResponse> => {
 
   var queryResult: { success: boolean, messages: string[] } = await db.row.delete('user', { id: request.params.id });
 

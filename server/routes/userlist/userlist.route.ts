@@ -5,9 +5,7 @@ import { User } from '../../models/models';
 
 import db from '../../services/db/db.service';
 
-export default async (request: ParsedRequest): Promise<RouterResponse<
-  { id: number, email: string, avatar: string, privilege: string }[] | void
->> => {
+export default async (request: ParsedRequest): Promise<RouterResponse> => {
 
   var queryResult: { success: boolean, messages: string[], body?: User[] };
 

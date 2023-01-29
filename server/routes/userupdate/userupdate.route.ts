@@ -7,7 +7,7 @@ import db from '../../services/db/db.service';
 
 export default async (request: ParsedRequest<
   { id: number, update: { email?: string, avatar?: string, privilege?: string } }
->): Promise<RouterResponse<void>> => {
+>): Promise<RouterResponse> => {
 
   var queryResult: { success: boolean, messages: string[] } = await db.row.update('user', request.params.update, { id: request.params.id });
 

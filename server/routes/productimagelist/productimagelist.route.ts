@@ -2,7 +2,11 @@ import { RouterResponse } from '../../services/router/router.service';
 
 import file from '../../services/file/file.service';
 
-export default async (request: any): Promise<RouterResponse<string[]>> => {
+export default async (request: any): Promise<RouterResponse<{
+  success: boolean,
+  messages: string[],
+  body?: string[]
+}>> => {
 
   const pList = await file.readDirectory('/public/products');
 
@@ -19,5 +23,5 @@ export default async (request: any): Promise<RouterResponse<string[]>> => {
       ],
       body: pList.body
     }
-  }))
+  }));
 }
