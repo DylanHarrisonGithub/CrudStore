@@ -1,13 +1,23 @@
-export default {
+import { Schema, COMMON_REGEXES } from '../../services/validation/validation.service';
+
+const registerSchema: Schema = {
   email: {
-    type: 'string',
-    isEmail: true,
-    required: true
+    type: COMMON_REGEXES.EMAIL,
+    attributes: {
+      required: true,
+      strLength: { minLength: 6 }
+    }
   },
   password: {
-    minLength: 8,
-    type: 'string',
-    isPassword: true,
-    required: true
+    type: COMMON_REGEXES.PASSWORD_STRONGEST,
+    attributes: {
+      required: false,
+      strLength: { minLength: 8 }
+    }
+  },
+  dummy: {
+    type: 'string'
   }
-}
+};
+
+export default registerSchema;
