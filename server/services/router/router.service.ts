@@ -165,7 +165,7 @@ const router = ((): typeof service extends Service ? typeof service : never => {
         success: false,
         messages: [
           'SERVER - SERVICES - ROUTER - Validation failed for route parameters.',
-          ...validation.body!.map(err => `key: ${err.key}: ${err.message}`)
+          ...validation.body!
         ],
         body: error(request, { 
           code: 400,
@@ -173,7 +173,7 @@ const router = ((): typeof service extends Service ? typeof service : never => {
             success: false,
             messages: [
               'Validation failed for route parameters.',
-              ...validation.body!.map(err => `key: ${err.key}: ${err.message}`)
+              ...validation.body!
             ]
           }
         })

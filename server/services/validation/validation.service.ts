@@ -1,177 +1,160 @@
-import { Service, ServicePromise } from "../services";
+import { Service, ServicePromise } from '../services';
 
-export type ValidationErrors = { key: string, message: string }[];
+type Primitive = string | number | boolean;
 
-export type ValidationSchema = { [key: string]: {
-  required?: boolean,
-  type?: "string" | "number" | "boolean" | "string[]" | "number[]" | "boolean[]" | ValidationSchema,
-  isArray?: boolean,
-  arrayMinLength?: number,
-  arrayMaxLength?: number,
-  minLength?: number,
-  maxLength?: number,
-  min?: number,
-  max?: number,
-  format?: "isAlpha" | "isAlphaNumeric" | "isAlphaNumericSpaces" | "isCommonWriting" | "isEmail" | "isPassword" | RegExp
-}};
+export type Schema = {
+  [key: string]: {
+    type:  
+      "string" | "number" | "boolean" |
+      "string | number" | "string | boolean" | "number | boolean" | 
+      "string | number | boolean" |
+      RegExp | Primitive[] | Schema,
+    attributes?: {
+      required?: boolean,
+      array?: { minLength?: number, maxLength?: number },
+      range?: { min?: number | string, max?: number | string },
+      strLength?: { minLength?: number, maxLength?: number },
+      tests?: ((inputRoot: any, input: any) => { success: boolean, message?: string })[] 
+    }
+  }
+}
 
-// below is a useful example of how to require at least one of a list of keys to be present
-// type Fruit = "apple" | 'banana' | 'coconut'
-
-// type RequireOne<T> = T & { [P in keyof T]: Required<Pick<T, P>> }[keyof T]
-// type FruitCollection = RequireOne<{ [f in Fruit]?: number }>
-
-const regex = {
-  email: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-  alpha: /^[a-zA-Z]*$/,
-  numeric: /^[0-9]*$/,
-  alphaNumeric: /^[a-zA-Z0-9]*$/,
-  alphaNumericSpaces: /^[a-zA-Z0-9 ]*$/,
-  commonWriting: /^[A-Za-z0-9 \-_.,?!()"'/$&]*$/,
-  password: /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[-+_!@#$%^&*.,?])/
+export const COMMON_REGEXES = {
+  EMAIL: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+  ALPHA: /^[a-zA-Z]*$/,
+  NUMERIC: /^[0-9]*$/,
+  ALPHA_NUMERIC: /^[a-zA-Z0-9]*$/,
+  ALPHA_NUMERIC_SPACES: /^[a-zA-Z0-9 ]*$/,
+  COMMON_WRITING: /^[A-Za-z0-9 \-_.,?!()"'/$&]*$/,
+  PASSWORD_STRONGEST: /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[-+_!@#$%^&*.,?])/
 };
 
+const validation2 = ((): typeof service extends Service ? typeof service : never => {
 
-
-const validation = ((): typeof service extends Service ? typeof service : never => {
-
-  const service = (input: any, schema: any): ServicePromise<ValidationErrors> => {
-    let _validateLeafNode = (key: any, input: any, schema: any): ValidationErrors => {
+  const service = (input: any, schema: Schema): ServicePromise<string[]> => {
+    
+    const validateLeafNode = (input: any, schema: Schema, key: string, root: any): string[] => {
       
-      let errors: Array<{key: string, message: string}> = [];
-      if (schema.hasOwnProperty('minLength')) {
-        if ((<string>input).length < schema['minLength']!) {
-          errors.push({ key: key, message: key + ' must be at least ' + schema['minLength'] + ' characters long.'});
+      let errors: string[] = [];
+
+      // reject leaf node inputs that do not match specified type
+      if (
+        (typeof schema[key].type === 'string' && !((<string>schema[key].type).includes(typeof input))) ||
+        (schema[key].type instanceof RegExp && !(typeof input === 'string')) ||
+        (Array.isArray(schema[key].type) && !((<Primitive[]>schema[key].type).includes(input))) 
+      ) {
+        return [key + ' does not match specified type.'];  // no further testing can safely be made
+      }
+
+      // inputs that match schema type are assumed to have only schema attributes 
+      // that make sense for that specified type
+
+      // regex test
+      if ((schema[key].type instanceof RegExp) && !((<RegExp>schema[key].type).test(input))) {
+        errors.push(key + ` does not match specified format.`);
+      }
+
+      // string length tests
+      if (schema[key].attributes?.strLength?.hasOwnProperty('minLength')) {
+        if (input.length < schema[key].attributes!.strLength!.minLength!) {
+          errors.push(key + ` does not meet minimum specified length.`);
         }
       }
-      if (schema.hasOwnProperty('maxLength')) {
-        if ((<string>input).length > schema['maxLength']!) {
-          errors.push({ key: key, message: key + ' cannot exceed ' + schema['maxLength'] + ' characters.'});
+
+      if (schema[key].attributes?.strLength?.hasOwnProperty('maxLength')) {
+        if (input.length > schema[key].attributes!.strLength!.maxLength!) {
+          errors.push(key + ` exceeds minimum specified length.`);
         }
       }
-      if (schema.hasOwnProperty('isAlpha') && schema['isAlpha']) {
-        if (!regex.alpha.test(input)) {
-          errors.push({ key: key, message: key + ' can only contain letters.' });
+      
+      // number or string range tests
+      if (schema[key].attributes?.range?.hasOwnProperty('min')) {
+        if (input < schema[key].attributes!.range!.min!) {
+          errors.push(key + ` is below specified range minimum.`);
         }
       }
-      if (schema.hasOwnProperty('isAlphaNumeric') && schema['isAlphaNumeric']) {
-        if (!regex.alphaNumeric.test(input)) {
-          errors.push({ key: key, message: key + ' can only contain letters and numbers.' });
+      
+      if (schema[key].attributes?.range?.hasOwnProperty('max')) {
+        if (input > schema[key].attributes!.range!.max!) {
+          errors.push(key + ` is above specified range maximum.`);
         }
       }
-      if (schema.hasOwnProperty('isAlphaNumericSpaces') && schema['isAlphaNumericSpaces']) {
-        if (!regex.alphaNumericSpaces.test(input)) {
-          errors.push({ key: key, message: key + ' can only contain letters, numbers and spaces.' });
+
+      // custom tests
+      schema[key].attributes?.tests?.forEach((test) => {
+        let res = test(root, input);
+        if (!res.success) {
+          errors.push(key + (res.message || ` failed custom test.`))
         }
-      }
-      if (schema.hasOwnProperty('isCommonWriting') && schema['isCommonWriting']) {
-        if (!regex.commonWriting.test(input)) {
-          errors.push({ key: key, message: key + ' can only contain letters, numbers, spaces and punctuation.' });
-        }
-      }
-      if (schema.hasOwnProperty('isEmail') && schema['isEmail']) {
-        if (!regex.email.test(input)) {
-          errors.push({ key: key, message: key + ' must be a valid email.' });
-        }
-      }
-      if (schema.hasOwnProperty('isPassword') && schema['isPassword']) {
-        if (!regex.password.test(input)) {
-          errors.push({ key: key, message: key + ' must contain at least one lowercase and uppercase letter, number, and special character.' });
-        }
-      }
-      if (schema.hasOwnProperty('regex')) {
-        if (!(<RegExp>schema['regex']).test(input)) {
-          errors.push({ key: key, message: key + ' does not match format.' });
-        }
-      }
-      if (schema.hasOwnProperty('min')) {
-        if (input < schema['min']!) {
-          errors.push({ key: key, message: key + ' must be at least ' + schema['min'] + '.'});
-        }
-      }
-      if (schema.hasOwnProperty('max')) {
-        if (input > schema['max']!) {
-          errors.push({ key: key, message: key + ' cannot exceed ' + schema['max'] + '.'});
-        }
-      }
+      });
+      console.log(errors);
+
       return errors;
     }
-  
-    let _validate = (input: any, schema: any, validate: any, validateLeafNode: any): ValidationErrors => {
-      let errors: Array<{key: string, message: string}> = [];
-      for (let key in schema) {
-  
-        if (input.hasOwnProperty(key) && !(input[key] === undefined || input[key] === null)) {
-  
-          if (typeof schema[key]['type'] === 'object') {
-  
-            if (Array.isArray(input[key])) {
-              for (let item of input[key]) {
-                errors = errors.concat(validate(item, schema[key]['type'], validate, validateLeafNode));
-              }
-            } else {
-              errors = errors.concat(validate(input[key], schema[key]['type'], validate, validateLeafNode));
-            }
-  
-          } else {
-  
-            if (schema[key]['type'] === (typeof input[key])) {
-  
-              if (['number', 'string', 'boolean'].indexOf(typeof input[key]) > -1) {
-                errors = errors.concat(validateLeafNode(key, input[key], schema[key]));
-              } else {
-                errors.push({
-                  key: key,
-                  message: key + ' is not of a supported type'
-                });
-              }
-  
-            } else {
-  
-              if (Array.isArray(input[key])) {
-  
-                for (let item of input[key]) {
-                  errors = errors.concat(validateLeafNode(key, item, schema[key]));
-                }
-  
-              } else {
-                errors.push({
-                  key: key,
-                  message: key + ' does not match specified type.'
-                });
-              }
-  
-            }
-          }
-  
+
+    const validateNode = (input: any, schema: Schema, root: any): string[] => Object.keys(schema).reduce((errors: string[], key: string): string[] => {
+
+      // if input does not have key
+      if (!(input.hasOwnProperty(key) && !(input[key] === undefined || input[key] === null))) {
+        if (schema[key].attributes?.required) {
+          errors.push(key + ' is required.');         
+        }
+        return errors;
+      }
+
+      // reject array inputs that are not supposed to be arrays
+      // reject inputs that are supposed to be arrays, but are not
+      if (Array.isArray(input[key]) != !!(schema[key].attributes?.array)) {
+        errors.push(key + ' does not match specified type.');
+        return errors;
+      }
+
+      // reject array inputs that violate array length bounds
+      if (Array.isArray(input[key])) {
+        if (schema[key].attributes?.array?.hasOwnProperty('minLength') && (input[key].length < schema[key].attributes!.array!.minLength!)) {
+          errors.push(key + ' does not meet the specified minimum array length.'); // subceeds
+        }
+        if (schema[key].attributes?.array?.hasOwnProperty('maxLength') && (input[key].length > schema[key].attributes!.array!.maxLength!)) {
+          errors.push(key + ' exceeds specified maximum array length.');
+        }
+        return errors;
+      }
+
+      // type is nested schema
+      if (typeof schema[key].type === 'object' && !(schema[key].type instanceof RegExp || Array.isArray(schema[key].type))) {
+        if (Array.isArray(input[key])) {
+          errors = errors.concat(input[key].reduce((errors2: string[], item: any): string[] => errors2.concat(validateNode(item, <Schema>(schema[key].type), root)), []));
         } else {
-          if (schema[key].hasOwnProperty('required') && schema[key]['required']) {
-            errors.push({
-              key: key,
-              message: key + ' is required.'
-            });
-          }
+          errors = errors.concat(validateNode(input[key], <Schema>(schema[key].type), root));
         }
+        return errors;
       }
-  
+      
+      // type is leaf node or array of leaf nodes
+      if (Array.isArray(input[key])) {
+        errors = errors.concat(input[key].reduce((errors2: string[], item: any): string[] => errors2.concat(validateLeafNode(item, schema, key, root), [])));
+      } else {
+        errors = errors.concat(validateLeafNode(input[key], schema, key, root)); 
+      }
       return errors;
-    }
-  
-    const errs = _validate(input, schema, _validate, _validateLeafNode);
+
+    }, []);
+
+    const errors = validateNode(input, schema, input);
     return new Promise((resolve => resolve({
-      success: !(errs.length),
+      success: !(errors.length),
       messages: [
-        errs.length ?
+        errors.length ?
           `Server - Services - Validation - Validation failed for input.`
         :
           `Server - Services - Validation - Input successfully validated.`
       ],
-      body: errs
+      body: errors
     })));
-  }
 
+  }
   return service;
 })();
 
-export default validation;
-  
+export default validation2;
+

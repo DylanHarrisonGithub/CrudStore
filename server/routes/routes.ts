@@ -27,12 +27,13 @@ import registerSchema from './register/register.schema';
 
 import { ParsedRequest } from "../services/requestParser/requestParser.service";
 import { RouterResponse } from "../services/router/router.service";
+import { Schema } from '../services/validation/validation.service';
 
 export interface Route {
   method: string[],
   contentType: string,
   privilege: string[],
-  schema: any,
+  schema: Schema,
   route: (request: ParsedRequest) => Promise<RouterResponse>
 }
 
@@ -118,7 +119,7 @@ const routes: { [key: string]: Route } = {
     method: ["POST"],
     contentType: "application/json",
     privilege: ['guest'],
-    schema: loginSchema,
+    schema: {}, //loginSchema,
     route: loginRoute 
   },
  register: {
