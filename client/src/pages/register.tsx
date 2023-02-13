@@ -1,6 +1,6 @@
 import React from "react";
 
-import ValidationService from "../services/validation.service";
+import ValidationService, { Schema, COMMON_REGEXES } from "../services/validation.service";
 import HttpService from "../services/http.service";
 
 const userSchema = {
@@ -18,6 +18,39 @@ const userSchema = {
   }
 }
 
+const userSchema2: Schema = {
+  email: {
+    type: COMMON_REGEXES.EMAIL,
+    attributes: {
+      required: true,
+      strLength: { minLength: 8, maxLength: 40 }
+    }
+  },
+  password: {
+    type: COMMON_REGEXES.PASSWORD_STRONGEST,
+    attributes: {
+      required: true,
+      strLength: { minLength: 8, maxLength: 40 }
+    }
+  },
+  password2: {
+    type: "string",
+    attributes: {
+      required: true,
+      tests: [
+        ((root, input) => {
+          let t = root.password === input;
+          if (t) {
+            return { success: true } 
+          } else {
+            return { success: false, message: ` Passwords do not match!`}
+          }
+        })
+      ]
+    }
+  }
+};
+
 const Register: React.FC<any> = (props: any) => {
 
   const [form, setForm] = React.useState<{email: string, password: string, password2: string}>({email: "", password: "", password2: ""});
@@ -26,15 +59,20 @@ const Register: React.FC<any> = (props: any) => {
   const updateForm = (key: string, value: string) => setForm({ ...form, [key]: value });
 
   React.useEffect(() => {
-    const errs = ValidationService({ email: form.email, password: form.password }, userSchema);
-    const emailErrs = errs.filter(e => e.key === 'email').map(e => e.message);
-    const passwordErrs = errs.filter(e => e.key === 'password').map(e => e.message);
-    const password2Errs = form.password === form.password2 ? [] : ['passwords do not match'];
-    setErrors({
-      email: form.email.length > 0 ? emailErrs : undefined,
-      password: form.password.length > 0 ? passwordErrs : undefined,
-      password2: (form.password2.length > 0 || form.password.length > 0) ? password2Errs : undefined
-    });
+    // useeffect function can't be directly async??
+    (async () => {
+      const errs = (await ValidationService({ email: form.email, password: form.password, password2: form.password2 }, userSchema2)).body;
+      const emailErrs = errs?.filter(e => e.includes('email'));
+      const passwordErrs = errs?.filter(e => (e.includes('password') && !(e.includes('password2'))));
+      const password2Errs = errs?.filter(e => e.includes(`Passwords do not match!`)).map(e => e.replace('password2', ''));
+      // const password2Errs = form.password === form.password2 ? [] : ['passwords do not match'];
+      setErrors({
+        email: form.email.length > 0 ? emailErrs : undefined,
+        password: form.password.length > 0 ? passwordErrs : undefined,
+        password2: (form.password2.length > 0 || form.password.length > 0) ? password2Errs : undefined
+      });
+    })();
+
   }, [form]);
 
   const submit = () => {
