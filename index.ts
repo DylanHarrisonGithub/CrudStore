@@ -1,17 +1,12 @@
-import express, { json } from 'express';
+import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import fileUpload from 'express-fileupload';
-
 import path from 'path';
+import os from 'os';
 
 import server from './server/server';
-
-import { RouterResponse } from './server/services/router/router.service';
 import db from './server/services/db/db.service';
-
-import os from 'os';
-import loginRoute from './server/routes/login/login.route';
 
 const app = express();
 

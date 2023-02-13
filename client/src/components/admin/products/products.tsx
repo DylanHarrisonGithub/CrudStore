@@ -1,7 +1,7 @@
 import React from 'react';
 import Gallery from '../../gallery/gallery';
 
-import HttpService, { HttpServiceReturnType } from '../../../services/http.service';
+import HttpService from '../../../services/http.service';
 import { ModalContext } from '../../modal/modal';
 
 import config from '../../../config/config';
