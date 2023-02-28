@@ -61,7 +61,7 @@ const Register: React.FC<any> = (props: any) => {
   React.useEffect(() => {
     // useeffect function can't be directly async??
     (async () => {
-      const errs = (await ValidationService({ email: form.email, password: form.password, password2: form.password2 }, userSchema2)).body;
+      const errs = (await ValidationService.validate({ email: form.email, password: form.password, password2: form.password2 }, userSchema2)).body;
       const emailErrs = errs?.filter(e => e.includes('email'));
       const passwordErrs = errs?.filter(e => (e.includes('password') && !(e.includes('password2'))));
       const password2Errs = errs?.filter(e => e.includes(`Passwords do not match!`)).map(e => e.replace('password2', ''));
