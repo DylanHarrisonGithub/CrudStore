@@ -14,7 +14,9 @@ export type Schema = {
       array?: { minLength?: number, maxLength?: number },
       range?: { min?: number | string, max?: number | string },
       strLength?: { minLength?: number, maxLength?: number },
-      tests?: ((inputRoot: any, input: any, key?: string) => { success: boolean, message?: string })[] 
+      tests?: ((inputRoot: any, input: any, key?: string) => { success: boolean, message?: string })[],
+      default?: any,
+      class?: string 
     }
   }
 }
@@ -29,129 +31,183 @@ export const COMMON_REGEXES = {
   PASSWORD_STRONGEST: /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[-+_!@#$%^&*.,?])/
 };
 
+export type Model = { [key: string]: string | number | boolean | Model | Array<string | number | boolean | Model> };
+
 const ValidationService = ((): typeof service extends Service ? typeof service : never => {
 
-  const service = (input: any, schema: Schema): ServicePromise<string[]> => {
-    
-    const validateLeafNode = (input: any, schema: Schema, key: string, root: any): string[] => {
-      
-      let errors: string[] = [];
+  const service = {
+    validate: (input: any, schema: Schema): ServicePromise<string[]> => {
+      const validateLeafNode = (input: any, schema: Schema, key: string, root: any): string[] => {
+        
+        let errors: string[] = [];
 
-      // reject leaf node inputs that do not match specified type
-      if (
-        (typeof schema[key].type === 'string' && !((<string>schema[key].type).includes(typeof input))) ||
-        (schema[key].type instanceof RegExp && !(typeof input === 'string')) ||
-        (Array.isArray(schema[key].type) && !((<Primitive[]>schema[key].type).includes(input))) 
-      ) {
-        return [key + ' does not match specified type.'];  // no further testing can safely be made
-      }
-
-      // inputs that match schema type are assumed to have only schema attributes 
-      // that make sense for that specified type
-
-      // regex test
-      if ((schema[key].type instanceof RegExp) && !((<RegExp>schema[key].type).test(input))) {
-        errors.push(key + ` does not match specified format.`);
-      }
-
-      // string length tests
-      if (schema[key].attributes?.strLength?.hasOwnProperty('minLength')) {
-        if (input.length < schema[key].attributes!.strLength!.minLength!) {
-          errors.push(key + ` does not meet minimum specified length.`);
+        // reject leaf node inputs that do not match specified type
+        if (
+          (typeof schema[key].type === 'string' && !((<string>schema[key].type).includes(typeof input))) ||
+          (schema[key].type instanceof RegExp && !(typeof input === 'string')) ||
+          (Array.isArray(schema[key].type) && !((<Primitive[]>schema[key].type).includes(input))) 
+        ) {
+          return [key + ' does not match specified type.'];  // no further testing can safely be made
         }
-      }
 
-      if (schema[key].attributes?.strLength?.hasOwnProperty('maxLength')) {
-        if (input.length > schema[key].attributes!.strLength!.maxLength!) {
-          errors.push(key + ` exceeds minimum specified length.`);
-        }
-      }
-      
-      // number or string range tests
-      if (schema[key].attributes?.range?.hasOwnProperty('min')) {
-        if (input < schema[key].attributes!.range!.min!) {
-          errors.push(key + ` is below specified range minimum.`);
-        }
-      }
-      
-      if (schema[key].attributes?.range?.hasOwnProperty('max')) {
-        if (input > schema[key].attributes!.range!.max!) {
-          errors.push(key + ` is above specified range maximum.`);
-        }
-      }
+        // inputs that match schema type are assumed to have only schema attributes 
+        // that make sense for that specified type
 
-      // custom tests
-      schema[key].attributes?.tests?.forEach((test) => {
-        let res = test(root, input);
-        if (!res.success) {
-          errors.push(key + (res.message || ` failed custom test.`))
+        // regex test
+        if ((schema[key].type instanceof RegExp) && !((<RegExp>schema[key].type).test(input))) {
+          errors.push(key + ` does not match specified format.`);
         }
-      });
-      console.log(errors);
 
-      return errors;
-    }
-
-    const validateNode = (input: any, schema: Schema, root: any): string[] => Object.keys(schema).reduce((errors: string[], key: string): string[] => {
-
-      // if input does not have key
-      if (!(input.hasOwnProperty(key) && !(input[key] === undefined || input[key] === null))) {
-        if (schema[key].attributes?.required) {
-          errors.push(key + ' is required.');         
+        // string length tests
+        if (schema[key].attributes?.strLength?.hasOwnProperty('minLength')) {
+          if (input.length < schema[key].attributes!.strLength!.minLength!) {
+            errors.push(key + ` does not meet minimum specified length.`);
+          }
         }
+
+        if (schema[key].attributes?.strLength?.hasOwnProperty('maxLength')) {
+          if (input.length > schema[key].attributes!.strLength!.maxLength!) {
+            errors.push(key + ` exceeds minimum specified length.`);
+          }
+        }
+        
+        // number or string range tests
+        if (schema[key].attributes?.range?.hasOwnProperty('min')) {
+          if (input < schema[key].attributes!.range!.min!) {
+            errors.push(key + ` is below specified range minimum.`);
+          }
+        }
+        
+        if (schema[key].attributes?.range?.hasOwnProperty('max')) {
+          if (input > schema[key].attributes!.range!.max!) {
+            errors.push(key + ` is above specified range maximum.`);
+          }
+        }
+
+        // custom tests
+        schema[key].attributes?.tests?.forEach((test) => {
+          let res = test(root, input);
+          if (!res.success) {
+            errors.push(key + (res.message || ` failed custom test.`))
+          }
+        });
+        console.log(errors);
+
         return errors;
       }
 
-      // reject array inputs that are not supposed to be arrays
-      // reject inputs that are supposed to be arrays, but are not
-      if (Array.isArray(input[key]) != !!(schema[key].attributes?.array)) {
-        errors.push(key + ' does not match specified type.');
-        return errors;
-      }
+      const validateNode = (input: any, schema: Schema, root: any): string[] => Object.keys(schema).reduce((errors: string[], key: string): string[] => {
 
-      // reject array inputs that violate array length bounds
-      if (Array.isArray(input[key])) {
-        if (schema[key].attributes?.array?.hasOwnProperty('minLength') && (input[key].length < schema[key].attributes!.array!.minLength!)) {
-          errors.push(key + ' does not meet the specified minimum array length.'); // subceeds
+        // if input does not have key
+        if (!(input.hasOwnProperty(key) && !(input[key] === undefined || input[key] === null))) {
+          if (schema[key].attributes?.required) {
+            errors.push(key + ' is required.');         
+          }
+          return errors;
         }
-        if (schema[key].attributes?.array?.hasOwnProperty('maxLength') && (input[key].length > schema[key].attributes!.array!.maxLength!)) {
-          errors.push(key + ' exceeds specified maximum array length.');
-        }
-        return errors;
-      }
 
-      // type is nested schema
-      if (typeof schema[key].type === 'object' && !(schema[key].type instanceof RegExp || Array.isArray(schema[key].type))) {
+        // reject array inputs that are not supposed to be arrays
+        // reject inputs that are supposed to be arrays, but are not
+        if (Array.isArray(input[key]) != !!(schema[key].attributes?.array)) {
+          errors.push(key + ' does not match specified type.');
+          return errors;
+        }
+
+        // reject array inputs that violate array length bounds
         if (Array.isArray(input[key])) {
-          errors = errors.concat(input[key].reduce((errors2: string[], item: any): string[] => errors2.concat(validateNode(item, <Schema>(schema[key].type), root)), []));
+          if (schema[key].attributes?.array?.hasOwnProperty('minLength') && (input[key].length < schema[key].attributes!.array!.minLength!)) {
+            errors.push(key + ' does not meet the specified minimum array length.'); // subceeds
+          }
+          if (schema[key].attributes?.array?.hasOwnProperty('maxLength') && (input[key].length > schema[key].attributes!.array!.maxLength!)) {
+            errors.push(key + ' exceeds specified maximum array length.');
+          }
+          return errors;
+        }
+
+        // type is nested schema
+        if (typeof schema[key].type === 'object' && !(schema[key].type instanceof RegExp || Array.isArray(schema[key].type))) {
+          if (Array.isArray(input[key])) {
+            errors = errors.concat(input[key].reduce((errors2: string[], item: any): string[] => errors2.concat(validateNode(item, <Schema>(schema[key].type), root)), []));
+          } else {
+            errors = errors.concat(validateNode(input[key], <Schema>(schema[key].type), root));
+          }
+          return errors;
+        }
+        
+        // type is leaf node or array of leaf nodes
+        if (Array.isArray(input[key])) {
+          errors = errors.concat(input[key].reduce((errors2: string[], item: any): string[] => errors2.concat(validateLeafNode(item, schema, key, root), [])));
         } else {
-          errors = errors.concat(validateNode(input[key], <Schema>(schema[key].type), root));
+          errors = errors.concat(validateLeafNode(input[key], schema, key, root)); 
         }
         return errors;
-      }
-      
-      // type is leaf node or array of leaf nodes
-      if (Array.isArray(input[key])) {
-        errors = errors.concat(input[key].reduce((errors2: string[], item: any): string[] => errors2.concat(validateLeafNode(item, schema, key, root), [])));
-      } else {
-        errors = errors.concat(validateLeafNode(input[key], schema, key, root)); 
-      }
-      return errors;
 
-    }, []);
+      }, []);
 
-    const errors = validateNode(input, schema, input);
-    return new Promise((resolve => resolve({
-      success: !(errors.length),
-      messages: [
-        errors.length ?
-          `Server - Services - Validation - Validation failed for input.`
-        :
-          `Server - Services - Validation - Input successfully validated.`
-      ],
-      body: errors
-    })));
+      const errors = validateNode(input, schema, input);
+      return new Promise((resolve => resolve({
+        success: !(errors.length),
+        messages: [
+          errors.length ?
+            `Server - Services - Validation - Validation failed for input.`
+          :
+            `Server - Services - Validation - Input successfully validated.`
+        ],
+        body: errors
+      })));
 
+    }, 
+    instantiateSchema: <T=Model>(schema: Schema): T => {
+      const createModel: (schema: Schema) => T = (schema: Schema) => Object.keys(schema).reduce((model: T, key: string): T => {
+        // type is nested schema
+        if (typeof schema[key].type === 'object' && !(schema[key].type instanceof RegExp || Array.isArray(schema[key].type))) {
+          return { 
+            ...model, 
+            [key]: schema[key].attributes?.array ? 
+                [ createModel(schema[key].type as Schema) ] 
+              : 
+                createModel(schema[key].type as Schema) 
+          }
+        }
+        // type is pick one from array
+        if (Array.isArray(schema[key].type)) {
+          return { 
+            ...model, 
+            [key]: schema[key].attributes?.array ?
+                [ schema[key].attributes?.default || (schema[key].type as Array<string | number | boolean>)[0].toString() ]
+              :
+                schema[key].attributes?.default || (schema[key].type as Array<string | number | boolean>)[0].toString()
+          } // this assumes the array is not empty
+        }
+        // type is boolean-ish
+        if ((typeof schema[key].type === `string`) && (schema[key].type as string).includes(`boolean`)) {
+          return { 
+            ...model, 
+            [key]: schema[key].attributes?.array ?
+                [ schema[key].attributes?.default || "false" ]
+              :
+                schema[key].attributes?.default || "false"
+          }
+        }
+        // type is regex
+        if (
+          (schema[key].type instanceof RegExp) ||
+          ((typeof schema[key].type === `string`) && (schema[key].type as string).includes(`string`)) ||
+          ((typeof schema[key].type === `string`) && (schema[key].type as string).includes(`number`))
+        ){
+          return { 
+            ...model, 
+            [key]: schema[key].attributes?.array ?
+                [ schema[key].attributes?.default || "" ]
+              :
+                schema[key].attributes?.default || ""
+          }
+        }
+        // should be unreacheable with properly defined model
+        return model;
+      }, {} as T);
+      return createModel(schema);
+    }
   }
   return service;
 })();

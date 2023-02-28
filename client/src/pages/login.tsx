@@ -17,7 +17,7 @@ const Login: React.FC<any> = (props: any) => {
   const navigate = useNavigate();
 
   const submit = () => {
-    HttpService.post<{ token: string }>('login', { email: form.email, password: form.password }).then(res => {     
+    HttpService.post<{ token: string }>('login', { email: form.email, password: form.password }).then(async res => {     
       if (!res.success) {
         console.log(res);
         modalContext.toast?.('error', 'Error occured attempting to login.');
@@ -25,7 +25,7 @@ const Login: React.FC<any> = (props: any) => {
       } else {
         if (res.body?.token) {
           res.messages.forEach(m => modalContext.toast?.('success', m));
-          AuthService.storeToken(res.body.token);
+          await AuthService.storeToken(res.body.token);
           navigate('/home');
         } else {
           modalContext.toast?.('error', 'Error occured attempting to login.');
