@@ -91,7 +91,6 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
             errors.push(key + (res.message || ` failed custom test.`))
           }
         });
-        console.log(errors);
 
         return errors;
       }
@@ -164,7 +163,7 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
           return { 
             ...model, 
             [key]: schema[key].attributes?.array ? 
-                [ createModel(schema[key].type as Schema) ] 
+                Array.from(new Array(schema[key].attributes?.array?.minLength || 1)).map(e => (schema[key].attributes?.default || createModel(schema[key].type as Schema)))
               : 
                 createModel(schema[key].type as Schema) 
           }
@@ -174,7 +173,7 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
           return { 
             ...model, 
             [key]: schema[key].attributes?.array ?
-                [ schema[key].attributes?.default || (schema[key].type as Array<string | number | boolean>)[0].toString() ]
+                Array.from(new Array(schema[key].attributes?.array?.minLength || 1)).map(e => schema[key].attributes?.default || (schema[key].type as Array<string | number | boolean>)[0].toString())
               :
                 schema[key].attributes?.default || (schema[key].type as Array<string | number | boolean>)[0].toString()
           } // this assumes the array is not empty
@@ -184,12 +183,12 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
           return { 
             ...model, 
             [key]: schema[key].attributes?.array ?
-                [ schema[key].attributes?.default || "false" ]
+                Array.from(new Array(schema[key].attributes?.array?.minLength || 1)).map(e => schema[key].attributes?.default || "false" )
               :
                 schema[key].attributes?.default || "false"
           }
         }
-        // type is regex
+        // type is regex or string or number
         if (
           (schema[key].type instanceof RegExp) ||
           ((typeof schema[key].type === `string`) && (schema[key].type as string).includes(`string`)) ||
@@ -198,7 +197,7 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
           return { 
             ...model, 
             [key]: schema[key].attributes?.array ?
-                [ schema[key].attributes?.default || "" ]
+                Array.from(new Array(schema[key].attributes?.array?.minLength || 1)).map(e => schema[key].attributes?.default || "" )
               :
                 schema[key].attributes?.default || ""
           }
@@ -206,6 +205,7 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
         // should be unreacheable with properly defined model
         return model;
       }, {} as T);
+      // console.log('model created', createModel(schema));
       return createModel(schema);
     }
   }
