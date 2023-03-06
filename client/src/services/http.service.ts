@@ -29,7 +29,7 @@ const HttpService = ((): typeof service extends Service ? typeof service : never
         options
       ).then(res => res.json()).then(async (res: ServiceType<T>) => { 
         if (schema) {
-          const schemaErrors = (await ValidationService(res.body, schema)).body?.map(u => `HttpService->GET->Validation Error: ${u}`);
+          const schemaErrors = (await ValidationService.validate(res.body, schema)).body?.map(u => `HttpService->GET->Validation Error: ${u}`);
           return {
             success: res.success && !(schemaErrors?.length),
             messages: [ ...(schemaErrors || []), ...res.messages ],
@@ -62,7 +62,7 @@ const HttpService = ((): typeof service extends Service ? typeof service : never
         }
       ).then(res => res.json()).then(async (res: ServiceType<T>) => {
         if (schema) {
-          const schemaErrors = (await ValidationService(res.body, schema)).body?.map(u => `HttpService - POST - Validation Error - ${u}`);
+          const schemaErrors = (await ValidationService.validate(res.body, schema)).body?.map(u => `HttpService - POST - Validation Error - ${u}`);
           return {
             success: res.success && !(schemaErrors?.length),
             messages: [ ...(schemaErrors || []), ...res.messages ],
@@ -95,7 +95,7 @@ const HttpService = ((): typeof service extends Service ? typeof service : never
         }
       ).then(res => res.json()).then(async (res: ServiceType<T>) => {
         if (schema) {
-          const schemaErrors = (await ValidationService(res.body, schema)).body?.map(u => `HttpService - PUT - Validation Error - ${u}`);
+          const schemaErrors = (await ValidationService.validate(res.body, schema)).body?.map(u => `HttpService - PUT - Validation Error - ${u}`);
           return {
             success: res.success && !(schemaErrors?.length),
             messages: [ ...(schemaErrors || []), ...res.messages ],
@@ -128,7 +128,7 @@ const HttpService = ((): typeof service extends Service ? typeof service : never
         }
       ).then(res => res.json()).then(async (res: ServiceType<T>) => {
         if (schema) {
-          const schemaErrors = (await ValidationService(res.body, schema)).body?.map(u => `HttpService - PATCH - Validation Error - ${u}`);
+          const schemaErrors = (await ValidationService.validate(res.body, schema)).body?.map(u => `HttpService - PATCH - Validation Error - ${u}`);
           return {
             success: res.success && !(schemaErrors?.length),
             messages: [ ...(schemaErrors || []), ...res.messages ],
@@ -165,7 +165,7 @@ const HttpService = ((): typeof service extends Service ? typeof service : never
         }
       ).then(res => res.json()).then(async (res: ServiceType<T>) => {
         if (schema) {
-          const schemaErrors = (await ValidationService(res.body, schema)).body?.map(u => `HttpService - DELETE - Validation Error - ${u}`);
+          const schemaErrors = (await ValidationService.validate(res.body, schema)).body?.map(u => `HttpService - DELETE - Validation Error - ${u}`);
           return {
             success: res.success && !(schemaErrors?.length),
             messages: [ ...(schemaErrors || []), ...res.messages ],
@@ -195,7 +195,7 @@ const HttpService = ((): typeof service extends Service ? typeof service : never
         }
       ).then(res => res.json()).then(async (res: ServiceType<T>) => {
         if (schema) {
-          const schemaErrors = (await ValidationService(res.body, schema)).body?.map(u => `HttpService - UPLOAD - Validation Error - ${u}`);
+          const schemaErrors = (await ValidationService.validate(res.body, schema)).body?.map(u => `HttpService - UPLOAD - Validation Error - ${u}`);
           return {
             success: res.success && !(schemaErrors?.length),
             messages: [ ...(schemaErrors || []), ...res.messages ],
