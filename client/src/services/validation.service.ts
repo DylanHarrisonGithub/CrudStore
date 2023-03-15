@@ -2,13 +2,13 @@ import { Service, ServicePromise } from './services';
 
 type Primitive = string | number | boolean;
 
-export type Schema = {
+export type Schema<T=undefined> = {
   [key: string]: {
     type:  
       "string" | "number" | "boolean" |
       "string | number" | "string | boolean" | "number | boolean" | 
       "string | number | boolean" |
-      RegExp | Primitive[] | Schema,
+      RegExp | Primitive[] | Schema<T>,
     attributes?: {
       required?: boolean,
       array?: { minLength?: number, maxLength?: number },
@@ -16,7 +16,7 @@ export type Schema = {
       strLength?: { minLength?: number, maxLength?: number },
       tests?: ((inputRoot: any, input: any, key?: string) => { success: boolean, message?: string })[],
       default?: any,
-      class?: string 
+      meta?: T
     }
   }
 }
@@ -36,7 +36,7 @@ export type Model = { [key: string]: string | number | boolean | Model | Array<s
 const ValidationService = ((): typeof service extends Service ? typeof service : never => {
 
   const service = {
-    validate: (input: any, schema: Schema): ServicePromise<string[]> => {
+    validate: (input: any, schema: Schema<any>): ServicePromise<string[]> => {
       const validateLeafNode = (input: any, schema: Schema, key: string, root: any): string[] => {
         
         let errors: string[] = [];
@@ -67,7 +67,7 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
 
         if (schema[key].attributes?.strLength?.hasOwnProperty('maxLength')) {
           if (input.length > schema[key].attributes!.strLength!.maxLength!) {
-            errors.push(key + ` exceeds minimum specified length.`);
+            errors.push(key + ` exceeds maximum specified length.`);
           }
         }
         
@@ -156,7 +156,7 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
       })));
 
     }, 
-    instantiateSchema: <T=Model>(schema: Schema): T => {
+    instantiateSchema: <T=Model>(schema: Schema<any>): T => {
       const createModel: (schema: Schema) => T = (schema: Schema) => Object.keys(schema).reduce((model: T, key: string): T => {
         // type is nested schema
         if (typeof schema[key].type === 'object' && !(schema[key].type instanceof RegExp || Array.isArray(schema[key].type))) {
