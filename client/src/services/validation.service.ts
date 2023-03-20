@@ -183,9 +183,9 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
           return { 
             ...model, 
             [key]: schema[key].attributes?.array ?
-                Array.from(new Array(schema[key].attributes?.array?.minLength || 1)).map(e => schema[key].attributes?.default || "false" )
+                Array.from(new Array(schema[key].attributes?.array?.minLength || 1)).map(e => schema[key].attributes?.default || false )
               :
-                schema[key].attributes?.default || "false"
+                schema[key].attributes?.default || false
           }
         }
         // type is regex or string or number

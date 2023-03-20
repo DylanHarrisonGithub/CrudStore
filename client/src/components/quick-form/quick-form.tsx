@@ -38,7 +38,97 @@ const QuickForm = <T=Model>({schema, onInput, _parentKey}: Props<T>): ReactEleme
       setErrors(errorObj);
       onInput(vErrors!, model as T);
     })();
-  }, [model])
+  }, [model]);
+
+  const renderLeaf: (...args: any[]) => React.ReactNode = (
+    model: Model, 
+    schema: Schema<QuickFormSchemaMetaType>, 
+    key: string,
+    i?: number
+  ) => {
+    if (
+      (typeof schema[key].type === 'string' &&
+      (schema[key].type as string).includes('string')) ||
+      (schema[key].type instanceof RegExp)
+    ) {
+      return (
+        <input
+          className={schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered"}
+          type="text"
+          name={typeof i === 'undefined' ? key : key + i}
+          value={typeof i === 'undefined' ? model[key] as string : (model[key] as Array<string>)[i] as string}
+          onChange={
+            (e: React.ChangeEvent<HTMLInputElement>) => setModel(m => 
+              typeof i === 'undefined' ?
+                ({...m, [key]: e.target.value})
+              :
+                ({...m, [key]: (model[key] as Array<any>).map((element,j) => j === i ? e.target.value : element)})
+            ) 
+          }
+        />
+      );
+    } else if (
+      (typeof schema[key].type === 'string' &&
+      (schema[key].type as string).includes('number'))
+    ) {
+      return (
+        <input
+          className={schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered"}
+          type="number"
+          name={typeof i === 'undefined' ? key : key + i}
+          value={typeof i === 'undefined' ? model[key] as string : (model[key] as Array<string>)[i] as string}
+          onChange={ 
+            (e: React.ChangeEvent<HTMLInputElement>) => setModel(m => 
+              typeof i === 'undefined' ?
+                ({...m, [key]: parseFloat(e.target.value)})
+              :
+                ({...m, [key]: (model[key] as Array<any>).map((element,j) => j === i ? parseFloat(e.target.value) : element)})
+            ) 
+          }
+        />
+      );
+    } else if (
+      (typeof schema[key].type === 'string' &&
+      (schema[key].type as string).includes('boolean'))
+    ) {
+      return (
+        <input
+          className={schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered"}
+          type="checkbox"
+          name={typeof i === 'undefined' ? key : key + i}
+          checked={typeof i === 'undefined' ? model[key] as boolean : (model[key] as Array<boolean>)[i] as boolean}
+          onChange={ 
+            (e: React.ChangeEvent<HTMLInputElement>) => setModel(m => 
+              typeof i === 'undefined' ? 
+                ({...m, [key]: !model[key] })
+              :
+                ({...m, [key]: (model[key] as Array<any>).map((element,j) => j === i ? !element : element)})
+            ) 
+          }
+        />
+      );
+    } else if (Array.isArray(schema[key].type)) {
+      return (
+        <select
+          value={typeof i === 'undefined' ? model[key] as string : (model[key] as Array<string>)[i] as string}
+          name={typeof i === 'undefined' ? key : key + i}
+          onChange={ 
+            (e: React.ChangeEvent<HTMLSelectElement>) => setModel(m => 
+              typeof i === 'undefined' ? 
+                ({...m, [key]: e.target.value})
+              :
+                ({...m, [key]: (model[key] as Array<any>).map((element,j) => j === i ? e.target.value : element)})
+            ) 
+          }
+        >
+          {
+            ((schema[key].type as string[]).map(option => <option value={option}>{option}</option>))
+          }
+        </select>
+      );
+    }
+    return <span>form error</span>; //should be unreacheable
+  }
 
   return (
     <table className={"table-auto"}>
@@ -115,13 +205,16 @@ const QuickForm = <T=Model>({schema, onInput, _parentKey}: Props<T>): ReactEleme
                             (model[key] as Array<any>).map((f, i) => (
                               <tr key={(_parentKey || "") + key + i.toString()} className="ml-3">
                                 <td><label className={schema[key].attributes?.meta?.quickForm?.labelClassName || ""}>{i}</label></td>
-                                <td><input
-                                  className={schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered"}
-                                  type="text"
-                                  name={key+i}
-                                  value={f.toString()}
-                                  onChange={ (e: React.ChangeEvent<HTMLInputElement>) => setModel(m => ({...m, [key]: (model[key] as Array<any>).map((element,j) => j === i ? e.target.value : element)})) }
-                                /></td>
+                                <td>
+                                  {/* <input
+                                    className={schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered"}
+                                    type="text"
+                                    name={key+i}
+                                    value={f.toString()}
+                                    onChange={ (e: React.ChangeEvent<HTMLInputElement>) => setModel(m => ({...m, [key]: (model[key] as Array<any>).map((element,j) => j === i ? e.target.value : element)})) }
+                                  /> */}
+                                  { renderLeaf(model, schema, key, i) }
+                                </td>
                               </tr>
                             ))
                           }
@@ -170,15 +263,7 @@ const QuickForm = <T=Model>({schema, onInput, _parentKey}: Props<T>): ReactEleme
                     className={schema[key].attributes?.meta?.quickForm?.containerClassName || ""}
                   >
                     <td><label className={schema[key].attributes?.meta?.quickForm?.labelClassName || ""}>{key}</label></td>
-                    <td>
-                      <input
-                        className={schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered"}
-                        type="text"
-                        name={key}
-                        value={model[key].toString()}
-                        onChange={ (e: React.ChangeEvent<HTMLInputElement>) => setModel(m => ({...m, [key]: e.target.value})) }
-                      />
-                    </td>
+                    <td>{ renderLeaf(model, schema, key) }</td>
                   </tr>
                   {
                     Object.keys(errors).includes(key) && (
