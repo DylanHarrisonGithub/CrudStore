@@ -21,6 +21,7 @@ const QuickForm = <T=Model>({schema, onInput, _parentKey}: Props<T>): ReactEleme
 
   const [model, setModel] = React.useState<Model>(ValidationService.instantiateSchema(schema));
   const [errors, setErrors] = React.useState<{ [key: string]: string[] }>({});
+  const refs = React.useRef<{[key:string]: HTMLInputElement | HTMLSelectElement | null}>({}); //Object.keys(schema).reduce((refObj, key) => ({...refObj, [key]: React.useRef(null)}), {});
 
   React.useEffect(() => {
     (async () => {
@@ -53,7 +54,11 @@ const QuickForm = <T=Model>({schema, onInput, _parentKey}: Props<T>): ReactEleme
     ) {
       return (
         <input
-          className={schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered"}
+          ref={element => refs.current[key] = element}
+          className={
+            (Object.keys(errors).includes(key) ? 'input-error ' : "input-success ") +
+            (schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered")
+          }
           type="text"
           name={typeof i === 'undefined' ? key : key + i}
           value={typeof i === 'undefined' ? model[key] as string : (model[key] as Array<string>)[i] as string}
@@ -73,6 +78,7 @@ const QuickForm = <T=Model>({schema, onInput, _parentKey}: Props<T>): ReactEleme
     ) {
       return (
         <input
+          ref={element => refs.current[key] = element}
           className={schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered"}
           type="number"
           name={typeof i === 'undefined' ? key : key + i}
@@ -93,6 +99,7 @@ const QuickForm = <T=Model>({schema, onInput, _parentKey}: Props<T>): ReactEleme
     ) {
       return (
         <input
+          ref={element => refs.current[key] = element}
           className={schema[key].attributes?.meta?.quickForm?.inputClassName || "ml-3 input input-bordered"}
           type="checkbox"
           name={typeof i === 'undefined' ? key : key + i}
@@ -110,6 +117,7 @@ const QuickForm = <T=Model>({schema, onInput, _parentKey}: Props<T>): ReactEleme
     } else if (Array.isArray(schema[key].type)) {
       return (
         <select
+          ref={element => refs.current[key] = element}
           value={typeof i === 'undefined' ? model[key] as string : (model[key] as Array<string>)[i] as string}
           name={typeof i === 'undefined' ? key : key + i}
           onChange={ 
@@ -266,7 +274,7 @@ const QuickForm = <T=Model>({schema, onInput, _parentKey}: Props<T>): ReactEleme
                     <td>{ renderLeaf(model, schema, key) }</td>
                   </tr>
                   {
-                    Object.keys(errors).includes(key) && (
+                    (Object.keys(errors).includes(key) && (document.activeElement === refs.current[key])) && ( // only show errors for active element to keep form cleaner
                       <tr>
                         <td colSpan={2}>
                           <table className='w-full'>

@@ -96,7 +96,7 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
       }
 
       const validateNode = (input: any, schema: Schema, root: any): string[] => Object.keys(schema).reduce((errors: string[], key: string): string[] => {
-
+        
         // if input does not have key
         if (!(input.hasOwnProperty(key) && !(input[key] === undefined || input[key] === null))) {
           if (schema[key].attributes?.required) {
@@ -116,11 +116,12 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
         if (Array.isArray(input[key])) {
           if (schema[key].attributes?.array?.hasOwnProperty('minLength') && (input[key].length < schema[key].attributes!.array!.minLength!)) {
             errors.push(key + ' does not meet the specified minimum array length.'); // subceeds
+            return errors;
           }
           if (schema[key].attributes?.array?.hasOwnProperty('maxLength') && (input[key].length > schema[key].attributes!.array!.maxLength!)) {
             errors.push(key + ' exceeds specified maximum array length.');
+            return errors;
           }
-          return errors;
         }
 
         // type is nested schema
@@ -132,10 +133,10 @@ const ValidationService = ((): typeof service extends Service ? typeof service :
           }
           return errors;
         }
-        
+
         // type is leaf node or array of leaf nodes
         if (Array.isArray(input[key])) {
-          errors = errors.concat(input[key].reduce((errors2: string[], item: any): string[] => errors2.concat(validateLeafNode(item, schema, key, root), [])));
+          errors = errors.concat(input[key].reduce((errors2: string[], item: any): string[] => errors2.concat(validateLeafNode(item, schema, key, root)), []));
         } else {
           errors = errors.concat(validateLeafNode(input[key], schema, key, root)); 
         }
